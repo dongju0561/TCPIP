@@ -38,6 +38,7 @@
 ```sh
 ./server
 ```
+- 이후 클라이언트 실행
 ```sh
 sudo ./client
 ```
