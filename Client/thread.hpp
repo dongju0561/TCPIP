@@ -1,11 +1,12 @@
 #ifndef THREAD_HPP
 #define THREAD_HPP
 
-#include <stdio.h>
+#include <iostream>
 #include <pthread.h>
+#include <cstdlib>
+#include <cstring>
 #include "linkedList.hpp"
-#include <stdlib.h>
-#include <string.h>
+
 
 #define BUFFER_SIZE 5
 #define BALL_NUM 200

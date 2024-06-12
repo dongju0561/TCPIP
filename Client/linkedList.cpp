@@ -1,8 +1,10 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include<iostream>
+#include <cstdlib>  
+#include <cstring>
 #include "linkedList.hpp"
 #include "fbDraw.hpp"
+
+using namespace std;
 
 node *head = (node *)malloc(sizeof(node));
 
@@ -11,14 +13,14 @@ void append_node(node* head, Ball* new_data)
     // 노드 메모리 할당
     node* new_node = (node*)malloc(sizeof(node));
     if (new_node == NULL) {
-        printf("Memory allocation failed\n");
+        cout << "Memory allocation failed\n";
         return;
     }
 
     // 노드 내 데이터 메모리 할당
     new_node->data = (Ball*)malloc(sizeof(Ball));
     if (new_node->data == NULL) {
-        printf("Memory allocation failed\n");
+        cout << "Memory allocation failed\n";
         free(new_node);
         return;
     }
@@ -58,7 +60,7 @@ void delete_last_node(node* head) {
 void print_info(node* head)
 {
     if (head == NULL || head->next == NULL) {
-        printf("list is empty\n");
+        cout << "list is empty" << endl;
         return;
     }
 
@@ -70,9 +72,9 @@ void print_info(node* head)
         int dx = curr->data->speed.dx;
         int dy = curr->data->speed.dy;
 
-        printf("노드번호: #%d\n", cnt);        
-        printf("x: %d, y: %d\n", curr->data->pos.x, curr->data->pos.y);
-        printf("speed: dx = %d dy = %d\n", dx, dy);
+        cout << "노드번호: #" << cnt << endl;        
+        cout << "x: " <<  curr->data->pos.x << "y: " << curr->data->pos.y << endl;
+        cout << "speed: dx = "<< dx << "dy = "<< dy  << endl;
 
         curr = curr->next;
     }

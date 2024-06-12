@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <cstdlib>
+#include <cstring>
 #include <unistd.h>
 #include <arpa/inet.h>
 

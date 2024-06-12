@@ -2,7 +2,7 @@
 // Keith Lee
 // Dev Box
 
-#include<stdio.h>
+#include <iostream>
 #include "fbDraw.hpp"
 
 dev_fb fb;
