@@ -1,2 +1,2 @@
-client: client.o
-	gcc client.c -o $@
+client: thread.cpp fbDraw.cpp main.cpp
+	gcc -o $@ $^ 
