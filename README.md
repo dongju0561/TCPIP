@@ -29,16 +29,16 @@
     ```
 3. 프로그램 빌드
     ```sh
-    make
+    sh exe.sh m
     ```
 
 # Example command to run the project
 - ctrl + Shift + F2~F5 입력(가상 콘솔로 이동)
 - 먼저 서버를 실행
 ```sh
-./server
+sh exe.sh s
 ```
 - 이후 클라이언트 실행
 ```sh
-sudo ./client
+sh exe.sh s
 ```
