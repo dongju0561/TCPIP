@@ -1,2 +1,2 @@
 server: main.cpp
-	gcc -o $@ $^
+	g++ -o $@ $^

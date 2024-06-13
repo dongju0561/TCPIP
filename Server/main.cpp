@@ -1,25 +1,37 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include<list>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include "common.hpp"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
-typedef struct
+using namespace std;
+
+Ball *createBall()
 {
-	int pos;
-	int speed;
-}Ball;
+    //랜덤으로 x, y, dx, dy 생성
+    Ball *ball = new Ball;
+    ball->pos.x = rand() % 1281;
+    ball->pos.y = rand() % 801;
+    ball->speed.dx = rand() % 2 == 0 ? 1 : -1;
+    ball->speed.dy = rand() % 2 == 0 ? 1 : -1;
+
+    return ball;
+}
 
 int main() {
     int server_fd, new_socket;
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
+    list<Ball> ballList;
+    Ball *newBall;
     // char buffer[BUFFER_SIZE] = {0};
-    Ball ball;
+    char cmd[100];
 
     const char *hello = "Hello from server";
 
@@ -54,104 +66,42 @@ int main() {
         perror("accept");
         exit(EXIT_FAILURE);
     }
-    read(new_socket, &ball, sizeof(Ball));
-    printf("Message from client: pos: %d speed: %d\n", ball.pos, ball.speed);
-    send(new_socket, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
+    while (1) {
+        memset(cmd, 0, BUFFER_SIZE); // 버퍼 초기화
+        int valread = recv(new_socket, cmd, BUFFER_SIZE, 0);
+        if (valread <= 0) {
+            break; // 연결이 끊어지거나 에러 발생 시 루프 탈출
+        }
+        switch (cmd[0]) 
+        {
+        case 'a':  
+            //공 객체 생성
+            newBall = createBall();
+
+            //공 객체를 리스트에 추가
+            ballList.push_back(*newBall);
+
+            cout << "ballList size: " << ballList.size() << endl;
+            for(list<Ball>::iterator it = ballList.begin(); it != ballList.end(); it++)
+            {
+                cout << "x: " << it->pos.x << " y: " << it->pos.y << endl;
+            }
+
+            break;
+        case 'd':
+            
+            break;
+        case 'c':
+            
+            break;
+        default:
+            break;
+        }
+        
+        
+    }
 
     close(new_socket);
     close(server_fd);
     return 0;
 }
-
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <unistd.h>
-// #include <arpa/inet.h>
-
-// #define PORT 8080
-// #define BUF_SIZE 1024
-// #define BALL_COUNT 5
-// #define WIDTH 1280
-// #define HEIGHT 800
-// #define RADIUS 4
-
-// typedef struct pixel_t
-// {
-// 	int x;
-// 	int y;
-// }pixel;
-
-// typedef struct 
-// {
-//     int dx; //case: -1, 1
-//     int dy; //case: -1, 1
-// } Speed;
-
-// typedef struct
-// {
-// 	pixel pos;
-// 	Speed speed;
-// }Ball;
-// void moveBall(Ball *ball);
-// void error_handling(const char *message);
-
-// int main() {
-//     int serv_sock, clnt_sock;
-//     struct sockaddr_in serv_addr, clnt_addr;
-//     socklen_t clnt_addr_size;
-//     char message[11];
-
-//     serv_sock = socket(PF_INET, SOCK_STREAM, 0);
-//     if (serv_sock == -1)
-//         error_handling("socket() error");
-
-//     memset(&serv_addr, 0, sizeof(serv_addr));
-//     serv_addr.sin_family = AF_INET;
-//     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-//     serv_addr.sin_port = htons(PORT);
-
-//     if (bind(serv_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) == -1)
-//         error_handling("bind() error");
-
-//     if (listen(serv_sock, 5) == -1)
-//         error_handling("listen() error");
-
-//     clnt_addr_size = sizeof(clnt_addr);
-//     clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
-//     if (clnt_sock == -1)
-//         error_handling("accept() error");
-//     read(clnt_sock, message, strlen(message));
-//     printf("Message from client: %s\n", message);
-    
-//     // while (1) {
-//     //     // 공의 위치 데이터를 클라이언트로 전송
-//     //     // write(clnt_sock, &ball, sizeof(Ball));
-//     //     // moveBall(&ball);
-//     //     read(clnt_sock, message, strlen(message));
-//     //     if (strcmp(message, "공 추가") == 0)
-//     //     {
-//     //         printf("Message from client: %s\n", message);
-//     //         sprintf(message, "");
-//     //         break;
-//     //     }
-//     // }
-
-//     close(clnt_sock);
-//     close(serv_sock);
-//     return 0;
-// }
-// void moveBall(Ball *ball){
-//     ball->pos.x += ball->speed.dx;
-//         ball->pos.y += ball->speed.dy;
-//         //ball이 벽에 부딪혔을때
-//         if (ball->pos.x <= 0 || ball->pos.x >= WIDTH - RADIUS) ball->speed.dx = -ball->speed.dx;
-//         if (ball->pos.y <= 0 || ball->pos.y >= HEIGHT - RADIUS) ball->speed.dy = -ball->speed.dy;
-// }
-
-// void error_handling(const char *message) {
-//     fputs(message, stderr);
-//     fputc('\n', stderr);
-//     exit(1);
-// }

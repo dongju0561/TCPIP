@@ -57,8 +57,15 @@ void *process_CMD(void *arg)
 
         switch (buffer[0]) 
         {
+        //
         case 'a':
-            send(sock, hello, strlen(hello), 0);
+            send(sock, buffer, sizeof(buffer), 0);
+            break;
+        case 'd':
+            send(sock, buffer, sizeof(buffer), 0);
+            break;
+        case 'c':
+            send(sock, buffer, sizeof(buffer), 0);
             break;
         default:
             break;
