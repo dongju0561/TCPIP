@@ -1,2 +1,2 @@
-server: main.cpp
+server: socket.cpp main.cpp
 	g++ -o $@ $^
