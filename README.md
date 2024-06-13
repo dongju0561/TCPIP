@@ -15,6 +15,24 @@
 공의 속도 감소('d')
 프로그램 종료('x')
 
+## Development Environment
+
+### Operating System
+- **OS:** Ubuntu 22.04.1 LTS
+
+### Kernel Version
+- **Kernel:** 6.5.0-35-generic
+
+### Network
+- **Networking:** 요구되는 포트: 서버와 통신하기 위하여 8080번 포트
+
+### Compiler
+- **Compiler:** g++ (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+
+### Build System
+- **Build System:** Make
+- **Make Version:** 4.3
+
 ## Installation
 
 ### Installing
