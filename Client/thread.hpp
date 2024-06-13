@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include <cstdlib>
 #include <cstring>
-#include "linkedList.hpp"
+#include "common.hpp"
 
 #define BUFFER_SIZE 5
 #define BALL_NUM 200
