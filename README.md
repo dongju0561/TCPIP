@@ -27,18 +27,18 @@
     ```sh
     cd TCPIP
     ```
-3. 프로그램 빌드
+3. client, server프로그램 빌드
     ```sh
-    sh exe.sh m
+    make all
     ```
 
 # Example command to run the project
 - ctrl + Shift + F2~F5 입력(가상 콘솔로 이동)
 - 먼저 서버를 실행
 ```sh
-sh exe.sh s
+make run-server
 ```
 - 이후 클라이언트 실행
 ```sh
-sh exe.sh s
+make run-client
 ```
