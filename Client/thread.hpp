@@ -7,7 +7,6 @@
 #include <cstring>
 #include "linkedList.hpp"
 
-
 #define BUFFER_SIZE 5
 #define BALL_NUM 200
 
@@ -16,7 +15,6 @@ typedef struct {
     Ball *ball;
 } ThreadArgs;
 
-extern int sock;
 extern int data_available;
 extern char buffer[BUFFER_SIZE];
 

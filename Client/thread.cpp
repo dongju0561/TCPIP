@@ -1,9 +1,11 @@
 #include<iostream>
 #include <arpa/inet.h>
+#include "socket.hpp"
 #include "common.hpp"
 #include "thread.hpp"
 
-int sock = 0;
+extern ClientSocket client;
+
 int data_available = false;
 char buffer[BUFFER_SIZE];
 
@@ -43,7 +45,6 @@ void *input_CMD(void *arg)
 //입력 받은 값을 처리하는 스레드 함수 
 void *process_CMD(void *arg)
 {
-    const char *hello = "Hello from client";
     while (true) 
     {
         // 잠금 획득
@@ -57,15 +58,14 @@ void *process_CMD(void *arg)
 
         switch (buffer[0]) 
         {
-        //
         case 'a':
-            send(sock, buffer, sizeof(buffer), 0);
+            send(client.sock, buffer, sizeof(buffer), 0);
             break;
         case 'd':
-            send(sock, buffer, sizeof(buffer), 0);
+            send(client.sock, buffer, sizeof(buffer), 0);
             break;
         case 'c':
-            send(sock, buffer, sizeof(buffer), 0);
+            send(client.sock, buffer, sizeof(buffer), 0);
             break;
         default:
             break;
