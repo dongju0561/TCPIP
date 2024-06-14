@@ -28,5 +28,6 @@ extern int speed;
 
 void *input_CMD(void *arg);
 void *process_CMD(void *arg);
+void *sync_list(void *arg);
 
 #endif // THREAD_H
