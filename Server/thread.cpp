@@ -22,6 +22,7 @@ Ball *createBall()
 {
     // 랜덤으로 x, y, dx, dy 생성
     Ball *ball = new Ball;
+    ball->idx = ball->idCount++;
     ball->pos.x = rand() % 1281;
     ball->pos.y = rand() % 801;
     ball->speed.dx = rand() % 2 == 0 ? 1 : -1;
@@ -105,6 +106,7 @@ void *recv_cmd(void *arg)
                 //리스트 삭제 시에는 클라이어트 전송 mutex 필요
                 //mutex lock
                 pthread_mutex_lock(&list_mutex);
+                ballList.back()->idCount--;
                 delete ballList.back();
                 ballList.pop_back();
                 pthread_mutex_unlock(&list_mutex);
@@ -129,6 +131,7 @@ void *recv_cmd(void *arg)
             {
                 delete *it;
             }
+            ballList.back()->idCount = 0;
             ballList.clear();
             pthread_mutex_unlock(&list_mutex);
             //mutex unlock
@@ -139,6 +142,30 @@ void *recv_cmd(void *arg)
         default:
             break;
         }
+    }
+    return NULL;
+}
+
+//클라이언트 리스트와 서버 리스트 동기화
+void *sync_list(void *arg)
+{
+    while (true)
+    {
+        //클라이언트 리스트와 서버 리스트 동기화
+        //mutex lock
+        pthread_mutex_lock(&list_mutex);
+        //리스트 전체를 한번에 send
+        // 리스트 전체를 한번에 send
+        if (!ballList.empty()) {
+            send(sock, (char *)&ballList.front(), ballList.size() * sizeof(Ball), 0);
+        }
+        // for (auto it = ballList.begin(); it != ballList.end(); ++it)
+        // {
+        //     //클라이언트로 전송
+        //     send(sock, (char *)*it, sizeof(Ball), 0);
+        // }
+        pthread_mutex_unlock(&list_mutex);
+        //mutex unlock
     }
     return NULL;
 }

@@ -32,6 +32,8 @@ typedef struct
 
 typedef struct
 {
+	static int idCount;
+	int idx;
 	pixel pos;
 	Speed speed;
 }Ball;
