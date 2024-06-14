@@ -5,15 +5,13 @@
 #include <pthread.h>
 #include <cstdlib>
 #include <cstring>
-#include "linkedList.hpp"
 
 
 #define BUFFER_SIZE 5
 #define BALL_NUM 200
 
 typedef struct {
-    dev_fb *fb;
-    Ball *ball;
+    int socket;
 } ThreadArgs;
 
 extern int sock;
@@ -24,11 +22,9 @@ extern pthread_cond_t buffer_cond;
 extern pthread_mutex_t buffer_mutex;
 
 // 공 속도 변수
-extern pthread_t input, processor;
-extern int speed;
+extern pthread_t receive, move_calculator;
 
-
-void *input_CMD(void *arg);
-void *process_CMD(void *arg);
+void *recv_cmd(void *arg);
+void *move_ball(void *arg);
 
 #endif // THREAD_H
