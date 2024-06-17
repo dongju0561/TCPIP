@@ -27,9 +27,11 @@ int main()
 
     pthread_create(&receive, NULL, recv_cmd, args);
     pthread_create(&move_calculator, NULL, move_ball, NULL);
+    pthread_create(&sync_t, NULL, sync_list, args);
 
     pthread_join(receive, NULL);
     pthread_join(move_calculator, NULL);
+    pthread_join(sync_t, NULL);
 
     close(new_socket);
     return 0;

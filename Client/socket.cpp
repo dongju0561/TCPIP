@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstdio>
+#include <fcntl.h>
 
 ClientSocket client = ClientSocket();
 
@@ -12,6 +13,7 @@ ClientSocket::ClientSocket() {
     if (sock < 0) {
         perror("Socket creation error");
     }
+    // set_nonblocking(this->sock);
 }
 ClientSocket::~ClientSocket() {
     close(sock);
@@ -27,6 +29,20 @@ void ClientSocket::connectToServer(const char *ip_address, int port){
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("Connection failed");
     }
+}
+// 소켓 파일 디스크립터를 논블로킹 모드로 설정
+int set_nonblocking(int sockfd) {
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1) {
+        perror("fcntl F_GETFL");
+        return -1;
+    }
+    flags |= O_NONBLOCK;
+    if (fcntl(sockfd, F_SETFL, flags) == -1) {
+        perror("fcntl F_SETFL");
+        return -1;
+    }
+    return 0;
 }
 
 

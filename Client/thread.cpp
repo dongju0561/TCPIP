@@ -1,6 +1,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <list>
+#include "fbDraw.hpp"
 #include "socket.hpp"
 #include "common.hpp"
 #include "thread.hpp"
@@ -14,11 +15,13 @@ char buffer[BUFFER_SIZE];
 
 pthread_cond_t list_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_t input, processor;
-ThreadArgs *args[BALL_NUM];
-
+pthread_t input, processor, sync_t, ball_thread[BALL_NUM];
+int num_of_thread = 0;
 int thread_index = 0;
+ThreadArgs *args[BALL_NUM];
 
 void *input_CMD(void *arg)
 {
@@ -64,9 +67,16 @@ void *process_CMD(void *arg)
         {
         case 'a':
             send(client.sock, buffer, sizeof(buffer), 0);
+            
+            ballList.push_back(NULL);
+            
+            //ballList 출력해줘
+            pthread_create(&ball_thread[thread_index++], NULL, fb_print_ball, &thread_index);
+
             break;
         case 'd':
             send(client.sock, buffer, sizeof(buffer), 0);
+            // pthread_cancel(ball_thread[--thread_index]);
             break;
         case 'c':
             send(client.sock, buffer, sizeof(buffer), 0);
@@ -83,26 +93,66 @@ void *process_CMD(void *arg)
     }
     return NULL;
 }
-
 // 서버 리스트로부터 전달 받은 데이터로 클라이언트 리스트 동기화
 void *sync_list(void *arg)
 {
     Ball *ball;
     while (true)
     {
+
         // 클라이언트 리스트와 서버 리스트 동기화
         // mutex lock
         pthread_mutex_lock(&list_mutex);
+        ball = new Ball;
+
         recv(client.sock, ball, sizeof(Ball), 0);
 
-        const int bufferSize = 1024; // 필요한 크기로 설정, 예: 최대 1024개의 Ball 객체
-        char buffer[bufferSize * sizeof(Ball)];
+        //idx로 advace를 이용하여 ballList에 추가
+        int idx = ball->idx;
+        list<Ball *>::iterator it = ballList.begin();
+        advance(it, idx);
+        *it = ball;
+        //만약에 새로 들어온 idx가  기존 idx보다 작다면
+        //흰 바탕으로 그린다.
+        
 
-        // 소켓에서 데이터 수신
-        recv(client.sock, buffer, sizeof(buffer), 0);
-
+        // 수신된 데이터 처리
         pthread_mutex_unlock(&list_mutex);
         // mutex unlock
+    }
+    return NULL;
+}
+void *fb_print_ball(void *arg)
+{
+    // list 요소 하나와 thread를 맵핑하여 fb에 출력
+    int idx = *(int*)arg;
+    list<Ball *>::iterator it; // Declare the 'offset' variable
+
+    while (true)
+    {
+        // mutex lock
+        pthread_mutex_lock(&list_mutex);
+
+        // 공의 위치를 화면에 출력
+        it = ballList.begin();
+        advance(it, idx);
+        Ball *ball = *it;
+        // 아직 공 비어있으면 대기
+        if (ball == NULL)
+        {
+            pthread_mutex_unlock(&list_mutex);
+            continue;
+        }
+        // it에 해당하는 공을 fb에 출력
+        pixel pre_pixel = ball->pos;
+        fb_drawFilledCircle(&fb, pre_pixel, 0, 0, 0);
+        cout << pre_pixel.x << ", " << pre_pixel.y << endl;
+        // mutex unlock
+        pthread_mutex_unlock(&list_mutex);
+        // 0.1초 대기
+        // usleep(10000);
+        // fb_drawFilledCircle(&fb, pre_pixel, 255, 255, 255);
+
     }
     return NULL;
 }

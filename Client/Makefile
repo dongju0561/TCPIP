@@ -1,2 +1,2 @@
-client: socket.cpp thread.cpp fbDraw.cpp main.cpp
-	g++ -o $@ $^ 
+client: thread.cpp socket.cpp fbDraw.cpp main.cpp
+	g++ -g -o $@ $^ 

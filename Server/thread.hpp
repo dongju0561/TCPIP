@@ -22,9 +22,10 @@ extern pthread_cond_t buffer_cond;
 extern pthread_mutex_t buffer_mutex;
 
 // 공 속도 변수
-extern pthread_t receive, move_calculator;
+extern pthread_t receive, move_calculator, sync_t;
 
 void *recv_cmd(void *arg);
 void *move_ball(void *arg);
+void *sync_list(void *arg);
 
 #endif // THREAD_H

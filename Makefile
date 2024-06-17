@@ -23,6 +23,10 @@ run-client:
 	@echo "Running client..."
 	@$(CLIENT_DIR)/client
 
+run-client-debug:
+	@echo "Running client in debug mode..."
+	@gdb -d $(CLIENT_DIR)/client 
+
 run-server:
 	@echo "Running server..."
 	@$(SERVER_DIR)/server

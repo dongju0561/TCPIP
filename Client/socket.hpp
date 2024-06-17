@@ -14,5 +14,6 @@ public:
 };
 
 extern ClientSocket client;
+int set_nonblocking(int sockfd);
 
 #endif // SOCKET_H

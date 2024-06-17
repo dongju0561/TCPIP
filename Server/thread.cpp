@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 #include <arpa/inet.h>
 #include <list>
 #include "common.hpp"
@@ -8,21 +8,22 @@
 using namespace std;
 
 extern list<Ball *> ballList;
-int sock = 0;
 int data_available = false;
 char buffer[BUFFER_SIZE];
 pthread_cond_t list_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_t receive, move_calculator;
+
+pthread_t receive, move_calculator, sync_t;
 ThreadArgs *args[BALL_NUM];
 int thread_index = 0;
+int ball_index = 0;
 
-//공 객체 생성 함수
+// 공 객체 생성 함수
 Ball *createBall()
 {
     // 랜덤으로 x, y, dx, dy 생성
     Ball *ball = new Ball;
-    ball->idx = ball->idCount++;
+    ball->idx = ball_index++;
     ball->pos.x = rand() % 1281;
     ball->pos.y = rand() % 801;
     ball->speed.dx = rand() % 2 == 0 ? 1 : -1;
@@ -31,13 +32,13 @@ Ball *createBall()
     return ball;
 }
 
-//공 객체의 위치를 업데이트하는 스레드 함수
+// 공 객체의 위치를 업데이트하는 스레드 함수
 void *move_ball(void *arg)
 {
     while (true)
     {
-        //리스트에 있는 모든 공 객체의 위치를 업데이트
-        //mutex lock
+        // 리스트에 있는 모든 공 객체의 위치를 업데이트
+        // mutex lock
         pthread_mutex_lock(&list_mutex);
         for (auto it = ballList.begin(); it != ballList.end(); ++it)
         {
@@ -55,17 +56,18 @@ void *move_ball(void *arg)
             }
         }
         pthread_mutex_unlock(&list_mutex);
-        //mutex unlock
+        // mutex unlock
+        usleep(10000); // 10ms 대기
     }
     return NULL;
 }
 
-//입력 받은 값을 처리하는 스레드 함수 
+// 입력 받은 값을 처리하는 스레드 함수
 void *recv_cmd(void *arg)
-{   
+{
     ThreadArgs *args = (ThreadArgs *)arg;
     int new_socket = args->socket;
-    
+
     Ball *newBall;
     char cmd[100];
 
@@ -84,59 +86,59 @@ void *recv_cmd(void *arg)
             // 공 객체 생성
             newBall = createBall();
 
-            //리스트 추가 시에는 클라이어트 전송 mutex 필요
-            //mutex lock
+            // 리스트 추가 시에는 클라이어트 전송 mutex 필요
+            // mutex lock
             pthread_mutex_lock(&list_mutex);
             ballList.push_back(newBall);
             pthread_mutex_unlock(&list_mutex);
-            //mutex unlock
+            // mutex unlock
 
-            //리스트 현황 출력
+            // 리스트 현황 출력
             cout << "ballList size: " << ballList.size() << endl;
             for (auto it = ballList.begin(); it != ballList.end(); ++it)
             {
                 cout << "Ball Position: " << (*it)->pos.x << ", " << (*it)->pos.y
-                          << " | Speed: " << (*it)->speed.dx << ", " << (*it)->speed.dy << endl;
+                     << " | Speed: " << (*it)->speed.dx << ", " << (*it)->speed.dy
+                     << "Ball Index: " << (*it)->idx << endl;
             }
             break;
         case 'd':
             // 리스트에서 마지막 객체 삭제
             if (!ballList.empty())
             {
-                //리스트 삭제 시에는 클라이어트 전송 mutex 필요
-                //mutex lock
+                // 리스트 삭제 시에는 클라이어트 전송 mutex 필요
+                // mutex lock
                 pthread_mutex_lock(&list_mutex);
-                ballList.back()->idCount--;
                 delete ballList.back();
                 ballList.pop_back();
                 pthread_mutex_unlock(&list_mutex);
-                //mutex unlock
+                // mutex unlock
             }
 
-            //리스트 현황 출력
+            // 리스트 현황 출력
             cout << "ballList size: " << ballList.size() << endl;
             for (auto it = ballList.begin(); it != ballList.end(); ++it)
             {
                 cout << "Ball Position: " << (*it)->pos.x << ", " << (*it)->pos.y
-                          << " | Speed: " << (*it)->speed.dx << ", " << (*it)->speed.dy << endl;
+                     << " | Speed: " << (*it)->speed.dx << ", " << (*it)->speed.dy
+                     << "Ball Index: " << (*it)->idx << endl;
             }
             break;
         case 'c':
             // 리스트 초기화
             // 리스트 내 모든 객체 할당 해제
-            //리스트 초기화 시에는 클라이어트 전송 mutex 필요
-            //mutex lock
+            // 리스트 초기화 시에는 클라이어트 전송 mutex 필요
+            // mutex lock
             pthread_mutex_lock(&list_mutex);
             for (auto it = ballList.begin(); it != ballList.end(); ++it)
             {
                 delete *it;
             }
-            ballList.back()->idCount = 0;
             ballList.clear();
             pthread_mutex_unlock(&list_mutex);
-            //mutex unlock
+            // mutex unlock
 
-            //리스트 현황 출력
+            // 리스트 현황 출력
             cout << "ballList size: " << ballList.size() << endl;
             break;
         default:
@@ -146,26 +148,31 @@ void *recv_cmd(void *arg)
     return NULL;
 }
 
-//클라이언트 리스트와 서버 리스트 동기화
+// 클라이언트 리스트와 서버 리스트 동기화
 void *sync_list(void *arg)
 {
     while (true)
     {
-        //클라이언트 리스트와 서버 리스트 동기화
-        //mutex lock
+        // 클라이언트 리스트와 서버 리스트 동기화
+        // mutex lock
         pthread_mutex_lock(&list_mutex);
-        //리스트 전체를 한번에 send
-        // 리스트 전체를 한번에 send
-        if (!ballList.empty()) {
-            send(sock, (char *)&ballList.front(), ballList.size() * sizeof(Ball), 0);
+        
+        ThreadArgs *args = (ThreadArgs *)arg;
+        int sock = args->socket;
+
+        if (!ballList.empty())
+        {
+            // 리스트 전체를 한번에 send
+            for (auto it = ballList.begin(); it != ballList.end(); ++it)
+            {
+                // 클라이언트로 전송
+                send(sock, *it, sizeof(Ball), 0);
+                usleep(1000); // 1ms 대기
+            }
+            
         }
-        // for (auto it = ballList.begin(); it != ballList.end(); ++it)
-        // {
-        //     //클라이언트로 전송
-        //     send(sock, (char *)*it, sizeof(Ball), 0);
-        // }
         pthread_mutex_unlock(&list_mutex);
-        //mutex unlock
+        // mutex unlock
     }
     return NULL;
 }
