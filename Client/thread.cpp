@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <arpa/inet.h>
 #include <list>
 #include "fbDraw.hpp"
@@ -12,6 +14,8 @@ extern ClientSocket client;
 extern list<Ball *> ballList;
 int data_available = false;
 char buffer[BUFFER_SIZE];
+
+ofstream log_file("log.txt", ios::app);
 
 pthread_cond_t list_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -115,7 +119,6 @@ void *sync_list(void *arg)
         list<Ball *>::iterator it = ballList.begin();
         advance(it, idx);
         *it = ball;
-
         // 수신된 데이터 처리
         pthread_mutex_unlock(&list_mutex);
         // mutex unlock
@@ -124,6 +127,10 @@ void *sync_list(void *arg)
 }
 void *fb_print_ball(void *arg)
 {
+    if (!log_file) {
+        cerr << "파일을 열 수 없습니다." << endl;
+        return NULL;
+    }
     // list 요소 하나와 thread를 맵핑하여 fb에 출력
     int idx = *(int*)arg;
     list<Ball *>::iterator it;
@@ -138,14 +145,19 @@ void *fb_print_ball(void *arg)
         {
             continue;
         }
-        // 현재 좌표를 검은색으로 칠함
-        pixel cur_pixel = ball->pos;
-        if ((cur_pixel.x < 0 || cur_pixel.x > fb.vinfo.xres) && (cur_pixel.y < 0 || cur_pixel.y > fb.vinfo.yres))
+        //만약 x혹은 y 좌표가 -1이라면 continue
+        if (ball->pos.x == -1 || ball->pos.y == -1 || ball->pos.x == 1 || ball->pos.y == 1)
         {
             continue;
         }
+        pixel cur_pixel = ball->pos;
+        log_file << "Ball Position: " << ball->pos.x << ", " << ball->pos.y << endl;
         fb_drawFilledCircle(&fb, cur_pixel, 0, 0, 0);
+
+
     }
+    log_file.close();
+
     return NULL;
 }
 

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <list>
+#include <chrono>
+#include <thread>
 #include "common.hpp"
 #include "thread.hpp"
 #include "socket.hpp"
@@ -54,9 +56,9 @@ void *move_ball(void *arg)
             {
                 (*it)->speed.dy *= -1;
             }
-            usleep(500); // 90ms 대기
         }
         pthread_mutex_unlock(&list_mutex);
+        usleep(400); // 90ms 대기
         // mutex unlock
         
     }
@@ -158,17 +160,18 @@ void *sync_list(void *arg)
         ThreadArgs *args = (ThreadArgs *)arg;
         int sock = args->socket;
 
+        pthread_mutex_lock(&list_mutex);
         if (!ballList.empty())
         {
             // 리스트 전체를 한번에 send
             for (auto it = ballList.begin(); it != ballList.end(); ++it)
             {
-                usleep(90); // 9ms 대기
+                this_thread::sleep_for(std::chrono::nanoseconds(500));
                 // 클라이언트로 전송
                 send(sock, *it, sizeof(Ball), 0);
-                cout << "Ball Position: " << (*it)->pos.x << ", " << (*it)->pos.y << endl;   
             }
         }
+        pthread_mutex_unlock(&list_mutex);
     }
     return NULL;
 }
