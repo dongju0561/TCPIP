@@ -153,6 +153,12 @@ void *fb_print_ball(void *arg)
         // usleep(10000);
         // fb_drawFilledCircle(&fb, pre_pixel, 255, 255, 255);
 
+void *fb_fill_background(void *arg)
+{
+    while (true)
+    {
+        fb_fillScr(&fb, 255, 255, 255);
+        usleep(5000);// 5ms 대기
     }
     return NULL;
 }
