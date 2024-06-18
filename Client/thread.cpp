@@ -126,7 +126,7 @@ void *fb_print_ball(void *arg)
 {
     // list 요소 하나와 thread를 맵핑하여 fb에 출력
     int idx = *(int*)arg;
-    list<Ball *>::iterator it; // Declare the 'offset' variable
+    list<Ball *>::iterator it;
     while (true)
     {
         // 공의 위치를 화면에 출력

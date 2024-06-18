@@ -7,7 +7,7 @@
 #include <cstring>
 
 
-#define BUFFER_SIZE 5
+#define CMD_BUFFER_SIZE 5
 #define BALL_NUM 200
 
 typedef struct {
@@ -16,7 +16,7 @@ typedef struct {
 
 extern int sock;
 extern int data_available;
-extern char buffer[BUFFER_SIZE];
+extern char buffer[CMD_BUFFER_SIZE];
 
 extern pthread_cond_t buffer_cond;
 extern pthread_mutex_t buffer_mutex;

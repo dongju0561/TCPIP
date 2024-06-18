@@ -9,7 +9,7 @@ using namespace std;
 
 extern list<Ball *> ballList;
 int data_available = false;
-char buffer[BUFFER_SIZE];
+char buffer[CMD_BUFFER_SIZE];
 pthread_cond_t list_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -54,10 +54,11 @@ void *move_ball(void *arg)
             {
                 (*it)->speed.dy *= -1;
             }
+            usleep(500); // 90ms 대기
         }
         pthread_mutex_unlock(&list_mutex);
         // mutex unlock
-        usleep(10000); // 10ms 대기
+        
     }
     return NULL;
 }
@@ -74,8 +75,8 @@ void *recv_cmd(void *arg)
     // 클라이언트로부터 명령 수신
     while (true)
     {
-        memset(cmd, 0, BUFFER_SIZE); // 버퍼 초기화
-        int valread = recv(new_socket, cmd, BUFFER_SIZE, 0);
+        memset(cmd, 0, CMD_BUFFER_SIZE); // 버퍼 초기화
+        int valread = recv(new_socket, cmd, CMD_BUFFER_SIZE, 0);
         if (valread <= 0)
         {
             break; // 연결이 끊어지거나 에러 발생 시 루프 탈출
@@ -154,9 +155,6 @@ void *sync_list(void *arg)
     while (true)
     {
         // 클라이언트 리스트와 서버 리스트 동기화
-        // mutex lock
-        pthread_mutex_lock(&list_mutex);
-        
         ThreadArgs *args = (ThreadArgs *)arg;
         int sock = args->socket;
 
@@ -165,14 +163,12 @@ void *sync_list(void *arg)
             // 리스트 전체를 한번에 send
             for (auto it = ballList.begin(); it != ballList.end(); ++it)
             {
+                usleep(90); // 9ms 대기
                 // 클라이언트로 전송
                 send(sock, *it, sizeof(Ball), 0);
-                usleep(1000); // 1ms 대기
+                cout << "Ball Position: " << (*it)->pos.x << ", " << (*it)->pos.y << endl;   
             }
-            
         }
-        pthread_mutex_unlock(&list_mutex);
-        // mutex unlock
     }
     return NULL;
 }
