@@ -9,7 +9,7 @@
 #include "socket.hpp" // socket 관련 함수 정의가 있는 헤더
 
 #define PORT 8080
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE1 1024
 
 using namespace std;
 
