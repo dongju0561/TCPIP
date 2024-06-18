@@ -42,6 +42,7 @@ void *move_ball(void *arg)
         // 리스트에 있는 모든 공 객체의 위치를 업데이트
         // mutex lock
         pthread_mutex_lock(&list_mutex);
+        
         for (auto it = ballList.begin(); it != ballList.end(); ++it)
         {
             (*it)->pos.x += (*it)->speed.dx;
@@ -57,6 +58,7 @@ void *move_ball(void *arg)
                 (*it)->speed.dy *= -1;
             }
         }
+        pthread_cond_signal(&list_cond);
         pthread_mutex_unlock(&list_mutex);
         usleep(400); // 90ms 대기
         // mutex unlock
@@ -154,19 +156,20 @@ void *recv_cmd(void *arg)
 // 클라이언트 리스트와 서버 리스트 동기화
 void *sync_list(void *arg)
 {
+    // 클라이언트 리스트와 서버 리스트 동기화
+    ThreadArgs *args = (ThreadArgs *)arg;
+    int sock = args->socket;
+
     while (true)
     {
-        // 클라이언트 리스트와 서버 리스트 동기화
-        ThreadArgs *args = (ThreadArgs *)arg;
-        int sock = args->socket;
-
         pthread_mutex_lock(&list_mutex);
+        pthread_cond_wait(&list_cond, &list_mutex);
         if (!ballList.empty())
         {
             // 리스트 전체를 한번에 send
             for (auto it = ballList.begin(); it != ballList.end(); ++it)
             {
-                this_thread::sleep_for(std::chrono::nanoseconds(500));
+                this_thread::sleep_for(std::chrono::nanoseconds(1000));
                 // 클라이언트로 전송
                 send(sock, *it, sizeof(Ball), 0);
             }
