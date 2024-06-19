@@ -36,7 +36,7 @@ Ball *createBall(int client_num)
 }
 
 // 공 객체의 위치를 업데이트하는 스레드 함수
-void *move_ball(void *arg)
+void move_ball()
 {
     while (true)
     {
@@ -65,14 +65,12 @@ void *move_ball(void *arg)
         // mutex unlock
         
     }
-    return NULL;
 }
 
 // 입력 받은 값을 처리하는 스레드 함수
-void *recv_cmd(void *arg)
+void recv_cmd(int client_socket)
 {
-    ThreadArgs *args = (ThreadArgs *)arg;
-    int new_socket = args->socket;
+    int new_socket = client_socket;
 
     Ball *newBall;
     packet pkt;
@@ -106,7 +104,7 @@ void *recv_cmd(void *arg)
             {
                 cout << "Ball Position: " << (*it)->pos.x << ", " << (*it)->pos.y
                      << " | Speed: " << (*it)->speed.dx << ", " << (*it)->speed.dy
-                     << "Ball Index: " << (*it)->idx << endl;
+                     << "Ball Index: " << (*it)->idx << "Ball type" << (int)(*it)->client_num << endl;
             }
             break;
         case 'd':
@@ -153,15 +151,13 @@ void *recv_cmd(void *arg)
             break;
         }
     }
-    return NULL;
 }
 
 // 클라이언트 리스트와 서버 리스트 동기화
-void *sync_list(void *arg)
+void sync_list(int client_socket)
 {
     // 클라이언트 리스트와 서버 리스트 동기화
-    ThreadArgs *args = (ThreadArgs *)arg;
-    int sock = args->socket;
+    int sock = client_socket;
 
     while (true)
     {
@@ -179,5 +175,13 @@ void *sync_list(void *arg)
         }
         pthread_mutex_unlock(&list_mutex);
     }
-    return NULL;
+}
+
+void keep_accept(ServerSocket server, vector<int>& client_sockets, vector<thread>& threads){
+    //thread 처리 필요!
+    while (true)
+    {
+        //클라이언트 소켓 벡터, 스레드 벡터에 추가
+        server.acceptConnection(client_sockets, threads);
+    }
 }

@@ -1,10 +1,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 #include <list>
 #include "common.hpp"
 #include "socket.hpp"
 #include "thread.hpp"
+#include <thread>
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
@@ -12,6 +14,8 @@
 using namespace std;
 
 list<Ball *> ballList;
+vector<int> client_sockets;
+vector<thread> threads;
 
 int main()
 {
@@ -19,20 +23,20 @@ int main()
     ServerSocket server(PORT);
     server.bindSocket();
     server.listenSocket(3);
-    int new_socket = server.acceptConnection();
 
-    // 클라이언트로부터 명령 수신 스레드 생성
-    ThreadArgs *args = new ThreadArgs;
-    args->socket = new_socket;
+    threads.push_back(thread(keep_accept, ref(server), ref(client_sockets), ref(threads)));
+    threads.push_back(thread(move_ball));
+    
+    //스레드 종료 대기
+    for(auto it = threads.begin(); it != threads.end(); ++it)
+    {
+        it->join();
+    }
 
-    pthread_create(&receive, NULL, recv_cmd, args);
-    pthread_create(&move_calculator, NULL, move_ball, NULL);
-    pthread_create(&sync_t, NULL, sync_list, args);
-
-    pthread_join(receive, NULL);
-    pthread_join(move_calculator, NULL);
-    pthread_join(sync_t, NULL);
-
-    close(new_socket);
+    //client_sockets 파일디스트립터 닫기
+    for(auto it = client_sockets.begin(); it != client_sockets.end(); ++it)
+    {
+        close(*it);
+    }
     return 0;
 }

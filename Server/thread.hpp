@@ -5,13 +5,16 @@
 #include <pthread.h>
 #include <cstdlib>
 #include <cstring>
-
+#include <vector>
+#include "socket.hpp"
 
 #define CMD_BUFFER_SIZE 5
 #define BALL_NUM 200
 
+using namespace std;
+
 typedef struct {
-    int socket;
+    int sockets;
 } ThreadArgs;
 
 extern int sock;
@@ -24,8 +27,9 @@ extern pthread_mutex_t buffer_mutex;
 // 공 속도 변수
 extern pthread_t receive, move_calculator, sync_t;
 
-void *recv_cmd(void *arg);
-void *move_ball(void *arg);
-void *sync_list(void *arg);
+void keep_accept(ServerSocket server, vector<int>& client_sockets, vector<thread>& threads);
+void recv_cmd(int client_socket);
+void move_ball();
+void sync_list(int client_socket);
 
 #endif // THREAD_H

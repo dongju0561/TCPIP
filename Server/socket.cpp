@@ -1,4 +1,9 @@
 #include "socket.hpp"
+#include "thread.hpp"
+#include <vector>
+#include <thread>
+
+using namespace std;
 
 ServerSocket::ServerSocket(int port) {
     opt = 1;
@@ -36,12 +41,14 @@ void ServerSocket::listenSocket(int backlog) {
     }
 }
 
-int ServerSocket::acceptConnection() {
+void ServerSocket::acceptConnection(vector<int>& client_sockets, vector<thread>& threads) {
     int addrlen = sizeof(address);
     int new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
     if (new_socket < 0) {
         perror("accept");
         exit(EXIT_FAILURE);
     }
-    return new_socket;
+    client_sockets.push_back(new_socket);
+    threads.push_back(thread(recv_cmd, new_socket));
+    threads.push_back(thread(sync_list, new_socket));
 }

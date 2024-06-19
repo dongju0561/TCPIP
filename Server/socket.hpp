@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
+#include <vector>
+#include <thread>
+
+using namespace std;
 
 class ServerSocket {
 public:
@@ -16,7 +20,7 @@ public:
     ~ServerSocket();
     void bindSocket();
     void listenSocket(int backlog);
-    int acceptConnection();
+    void acceptConnection(vector<int>& client_sockets, vector<thread>& threads);
 };
 
 #endif // SOCKET_HPP
