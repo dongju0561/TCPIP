@@ -15,8 +15,6 @@ extern list<Ball *> ballList;
 int data_available = false;
 char buffer[BUFFER_SIZE];
 
-ofstream log_file("log.txt", ios::app);
-
 pthread_cond_t list_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
