@@ -7,10 +7,11 @@ CFLAGS = -Wall
 # Directories
 CLIENT1_DIR = Client1
 CLIENT2_DIR = Client2
+CLIENT3_DIR = Client3
 SERVER_DIR = Server
 
 # Targets
-all: client1 client2 server
+all: client1 client2 client3 server
 
 client1:
 	@echo "Building client1..."
@@ -39,6 +40,18 @@ run-client2:
 run-client2-debug:
 	@echo "Running client2 in debug mode..."
 	@gdb $(CLIENT2_DIR)/client2 
+
+client3:
+	@echo "Building client3..."
+	$(MAKE) -C $(CLIENT3_DIR)
+
+run-client3:
+	@echo "Running client3..."
+	@$(CLIENT3_DIR)/client3
+
+run-client3-debug:
+	@echo "Running client3 in debug mode..."
+	@gdb $(CLIENT3_DIR)/client3
 
 run-server:
 	@echo "Running server..."
