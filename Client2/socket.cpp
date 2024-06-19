@@ -1,4 +1,5 @@
 #include "socket.hpp"
+#include "common.hpp"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -29,6 +30,8 @@ void ClientSocket::connectToServer(const char *ip_address, int port){
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("Connection failed");
     }
+    int client_num = CLIENT_NUM;
+    send(sock, &client_num, sizeof(client_num), 0);
 }
 // 소켓 파일 디스크립터를 논블로킹 모드로 설정
 int set_nonblocking(int sockfd) {

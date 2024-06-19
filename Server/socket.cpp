@@ -1,7 +1,8 @@
-#include "socket.hpp"
-#include "thread.hpp"
 #include <vector>
 #include <thread>
+#include <iostream>
+#include "socket.hpp"
+#include "thread.hpp"
 
 using namespace std;
 
@@ -48,7 +49,10 @@ void ServerSocket::acceptConnection(vector<int>& client_sockets, vector<thread>&
         perror("accept");
         exit(EXIT_FAILURE);
     }
+    int int_buffer = 0;
     client_sockets.push_back(new_socket);
+    recv(new_socket,&int_buffer,sizeof(int_buffer),0);
+    cout << "Client" << int_buffer << " is connected" << endl;
     threads.push_back(thread(recv_cmd, new_socket));
     threads.push_back(thread(sync_list, new_socket));
 }
