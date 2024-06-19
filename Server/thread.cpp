@@ -21,11 +21,12 @@ int thread_index = 0;
 int ball_index = 0;
 
 // 공 객체 생성 함수
-Ball *createBall()
+Ball *createBall(int client_num)
 {
     // 랜덤으로 x, y, dx, dy 생성
     Ball *ball = new Ball;
     ball->idx = ball_index++;
+    ball->client_num = client_num;
     ball->pos.x = rand() % 1281;
     ball->pos.y = rand() % 801;
     ball->speed.dx = rand() % 2 == 0 ? 1 : -1;
@@ -74,22 +75,23 @@ void *recv_cmd(void *arg)
     int new_socket = args->socket;
 
     Ball *newBall;
-    char cmd[100];
+    packet pkt;
 
     // 클라이언트로부터 명령 수신
     while (true)
     {
-        memset(cmd, 0, CMD_BUFFER_SIZE); // 버퍼 초기화
-        int valread = recv(new_socket, cmd, CMD_BUFFER_SIZE, 0);
+        memset(&pkt, 0, sizeof(packet)); // 버퍼 초기화
+        int valread = recv(new_socket, &pkt, sizeof(packet), 0);
         if (valread <= 0)
         {
             break; // 연결이 끊어지거나 에러 발생 시 루프 탈출
         }
-        switch (cmd[0])
+        switch (pkt.cmd[0])
         {
         case 'a':
             // 공 객체 생성
-            newBall = createBall();
+            //전달 받은 클라이언트 번호를 인자로 전달
+            newBall = createBall(pkt.client_num);
 
             // 리스트 추가 시에는 클라이어트 전송 mutex 필요
             // mutex lock
@@ -114,6 +116,7 @@ void *recv_cmd(void *arg)
                 // 리스트 삭제 시에는 클라이어트 전송 mutex 필요
                 // mutex lock
                 pthread_mutex_lock(&list_mutex);
+                ball_index--;
                 delete ballList.back();
                 ballList.pop_back();
                 pthread_mutex_unlock(&list_mutex);

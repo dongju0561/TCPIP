@@ -57,6 +57,8 @@ void *input_CMD(void *arg)
 void *process_CMD(void *arg)
 {
     int idx;
+    packet pkt;
+
     while (true)
     {
         // 잠금 획득
@@ -67,11 +69,13 @@ void *process_CMD(void *arg)
         {
             pthread_cond_wait(&buffer_cond, &buffer_mutex);
         }
-
+        
         switch (buffer[0])
         {
         case 'a':
-            send(client.sock, buffer, sizeof(buffer), 0);
+            pkt.cmd[0] = 'a';
+            pkt.client_num = CLIENT_NUM;
+            send(client.sock, &pkt, sizeof(packet), 0);
             
             ballList.push_back(NULL);
             
@@ -127,10 +131,6 @@ void *sync_list(void *arg)
 }
 void *fb_print_ball(void *arg)
 {
-    if (!log_file) {
-        cerr << "파일을 열 수 없습니다." << endl;
-        return NULL;
-    }
     // list 요소 하나와 thread를 맵핑하여 fb에 출력
     int idx = *(int*)arg;
     list<Ball *>::iterator it;
@@ -151,13 +151,21 @@ void *fb_print_ball(void *arg)
             continue;
         }
         pixel cur_pixel = ball->pos;
-        log_file << "Ball Position: " << ball->pos.x << ", " << ball->pos.y << endl;
-        fb_drawFilledCircle(&fb, cur_pixel, 0, 0, 0);
-
-
+        switch (ball->client_num)
+        {
+        case 1:
+            fb_drawFilledCircle(&fb, cur_pixel, 255, 0, 0);
+            break;
+        case 2:
+            fb_drawFilledCircle(&fb, cur_pixel, 0, 255, 0);
+            break;
+        case 3:
+            fb_drawFilledCircle(&fb, cur_pixel, 0, 0, 255);
+            break;
+        default:
+            break;
+        }
     }
-    log_file.close();
-
     return NULL;
 }
 

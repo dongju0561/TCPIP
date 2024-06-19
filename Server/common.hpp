@@ -33,6 +33,7 @@ typedef struct
 typedef struct
 {
 	int idx;
+	int client_num;
 	pixel pos;
 	Speed speed;
 }Ball;
@@ -42,5 +43,11 @@ typedef struct Node
     Ball *data;
     struct Node *next;
 }node;
+
+typedef struct
+{
+	char cmd[100];
+	int client_num;
+}packet;
 
 #endif// COMMON_H
