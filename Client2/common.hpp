@@ -9,7 +9,7 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
-#define CLIENT_NUM 1
+#define CLIENT_NUM 2
 
 typedef struct dev_fb_t
 {

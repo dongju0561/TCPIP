@@ -5,27 +5,40 @@ CC = gcc
 CFLAGS = -Wall
 
 # Directories
-CLIENT_DIR = Client
+CLIENT1_DIR = Client1
+CLIENT2_DIR = Client2
 SERVER_DIR = Server
 
 # Targets
-all: client server
+all: client1 client2 server
 
-client:
-	@echo "Building client..."
-	$(MAKE) -C $(CLIENT_DIR)
+client1:
+	@echo "Building client1..."
+	$(MAKE) -C $(CLIENT1_DIR)
+
+run-client1:
+	@echo "Running client1..."
+	@$(CLIENT1_DIR)/client1
+
+run-client1-debug:
+	@echo "Running client1 in debug mode..."
+	@gdb $(CLIENT1_DIR)/client1 
+
+client2:
+	@echo "Building client2..."
+	$(MAKE) -C $(CLIENT2_DIR)
 
 server:
 	@echo "Building server..."
 	$(MAKE) -C $(SERVER_DIR)
 
-run-client:
-	@echo "Running client..."
-	@$(CLIENT_DIR)/client
+run-client2:
+	@echo "Running client2..."
+	@$(CLIENT2_DIR)/client2
 
-run-client-debug:
-	@echo "Running client in debug mode..."
-	@gdb $(CLIENT_DIR)/client 
+run-client2-debug:
+	@echo "Running client2 in debug mode..."
+	@gdb $(CLIENT2_DIR)/client2 
 
 run-server:
 	@echo "Running server..."
@@ -37,5 +50,6 @@ run-server-debug:
 
 clean:
 	@echo "Cleaning up..."
-	$(MAKE) -C $(CLIENT_DIR) clean
+	$(MAKE) -C $(CLIENT1_DIR) clean
+	$(MAKE) -C $(CLIENT2_DIR) clean
 	$(MAKE) -C $(SERVER_DIR) clean
