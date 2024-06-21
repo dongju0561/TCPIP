@@ -60,7 +60,7 @@ void move_ball()
         }
         pthread_cond_signal(&list_cond);
         pthread_mutex_unlock(&list_mutex);
-        usleep(500); // 90ms 대기
+        usleep(300); // 90ms 대기
         // mutex unlock
         
     }
@@ -181,7 +181,7 @@ void sync_list(int client_socket)
                 // 클라이언트로 전송
                 Ball *ball = *it;
                 pkt.pkt_type = 1;
-                pkt.ball = ball;
+                pkt.ball = *ball;
                 send(sock, &pkt, sizeof(sync_packet), 0);
                 // send(sock, ball, sizeof(Ball), 0);
 

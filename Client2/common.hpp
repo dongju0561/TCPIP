@@ -55,7 +55,8 @@ typedef struct
 
 typedef struct{
 	int pkt_type;//0: size, 1: data
-	Ball *ball;
+	int list_size;
+	Ball ball;
 }sync_packet;
 
 #endif// COMMON_H

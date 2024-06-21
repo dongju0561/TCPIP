@@ -106,8 +106,6 @@ void *sync_list(void *arg)
     while (true)
     {
         // 클라이언트 리스트와 서버 리스트 동기화
-        // mutex lock
-        pthread_mutex_lock(&list_mutex);
         
         // ball = new Ball;
 
@@ -116,18 +114,25 @@ void *sync_list(void *arg)
         {
         case 0:
             num_of_list_element = pkt.list_size;
+            // mutex lock
+            pthread_mutex_lock(&list_mutex);
             ballList.clear();
             for (int i = 0; i < num_of_list_element; i++)
             {
                 ballList.push_back(NULL);
             }
+            pthread_mutex_unlock(&list_mutex);
             break;
         case 1:
-            ball = pkt.ball;
+            ball = new Ball;
+            memcpy(ball, &pkt.ball, sizeof(Ball));
             recved_idx = ball->idx;
+            // mutex lock
+            pthread_mutex_lock(&list_mutex);
             it = ballList.begin();
             advance(it, recved_idx);
             *it = ball;
+            pthread_mutex_unlock(&list_mutex);
             break;
         default:
             break;
@@ -136,7 +141,7 @@ void *sync_list(void *arg)
 
         //idx로 advace를 이용하여 ballList에 추가
 
-        pthread_mutex_unlock(&list_mutex);
+        
         // mutex unlock
     }
     return NULL;
@@ -145,6 +150,8 @@ void *monitor_list(void *arg){
     while(true){
         list<Ball *>::iterator it;
         // cout << ballList.size() << endl;
+        // mutex lock
+        pthread_mutex_lock(&list_mutex);
         for (it = ballList.begin(); it != ballList.end(); it++)
         {
             Ball *ball = *it;
@@ -155,6 +162,8 @@ void *monitor_list(void *arg){
             }
             // cout << "idx: " << ball->idx << " x: " << ball->pos.x << " y: " << ball->pos.y << " client_num: " << ball->client_num << endl;
         }
+        // mutex lock
+        pthread_mutex_unlock(&list_mutex);
     }
 }
 void *fb_print_ball(void *arg)
@@ -163,6 +172,8 @@ void *fb_print_ball(void *arg)
     // 모든 리스트의 요소를 출력
     while(true){
         list<Ball *>::iterator it;
+        // mutex lock
+        pthread_mutex_lock(&list_mutex);
         for (it = ballList.begin(); it != ballList.end(); it++)
         {
             Ball *ball = *it;
@@ -191,21 +202,15 @@ void *fb_print_ball(void *arg)
                 break;
             }
         }
-        //두번째일때 흰색으로 채움
-        // if(is_twice){
-        //     fb_fillScr(&fb, 255, 255, 255);
-        //     is_twice = false;
-        // }
-        // else{
-        //     is_twice = true;
-        // }
+        // mutex lock
+        pthread_mutex_unlock(&list_mutex);
     }
     return NULL;
 }
 
 void *erase_all_ball(void *arg){
     while(true){
-        usleep(10000);
+        usleep(20000);
         fb_fillScr(&fb, 255, 255, 255);
     }
 }
