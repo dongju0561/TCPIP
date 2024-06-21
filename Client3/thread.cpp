@@ -22,9 +22,7 @@ pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_t input, processor, sync_t, ball_thread[BALL_NUM], fb_fill_background_thread;
-int num_of_thread = 0;
-int thread_index = 0;
+pthread_t input, processor, sync_t, ball_thread[BALL_NUM];
 ThreadArgs *args[BALL_NUM];
 
 void *input_CMD(void *arg)
@@ -78,16 +76,11 @@ void *process_CMD(void *arg)
             send(client.sock, &pkt, sizeof(packet), 0);
             
             ballList.push_back(NULL);
-            
-            //ballList 출력해줘
-
-            idx = thread_index;
             pthread_create(&ball_thread[idx], NULL, fb_print_ball, (void *)&idx);
-            thread_index += 1;
             break;
         case 'd':
             send(client.sock, buffer, sizeof(buffer), 0);
-            pthread_cancel(ball_thread[--thread_index]);
+            ballList.back() = NULL;
             break;
         case 'c':
             send(client.sock, buffer, sizeof(buffer), 0);
@@ -131,50 +124,35 @@ void *sync_list(void *arg)
 }
 void *fb_print_ball(void *arg)
 {
-    // list 요소 하나와 thread를 맵핑하여 fb에 출력
-    int idx = *(int*)arg;
-    list<Ball *>::iterator it;
-    while (true)
-    {
-        // 공의 위치를 화면에 출력
-        it = ballList.begin();
-        advance(it, idx);
-        Ball *ball = *it;
-        // 아직 공 비어있으면 대기
-        if (ball == NULL)
+    while(true){
+        list<Ball *>::iterator it;
+        for (it = ballList.begin(); it != ballList.end(); it++)
         {
-            continue;
+            Ball *ball = *it;
+            if (ball == NULL)
+            {
+                continue;
+            }
+            if (ball->pos.x == -1 || ball->pos.y == -1 || ball->pos.x == 1 || ball->pos.y == 1)
+            {
+                continue;
+            }
+            pixel cur_pixel = ball->pos;
+            switch (ball->client_num)
+            {
+            case 1:
+                fb_drawFilledCircle(&fb, cur_pixel, 255, 0, 0);
+                break;
+            case 2:
+                fb_drawFilledCircle(&fb, cur_pixel, 0, 255, 0);
+                break;
+            case 3:
+                fb_drawFilledCircle(&fb, cur_pixel, 0, 0, 255);
+                break;
+            default:
+                break;
+            }
         }
-        //만약 x혹은 y 좌표가 -1이라면 continue
-        if (ball->pos.x == -1 || ball->pos.y == -1 || ball->pos.x == 1 || ball->pos.y == 1)
-        {
-            continue;
-        }
-        pixel cur_pixel = ball->pos;
-        switch (ball->client_num)
-        {
-        case 1:
-            fb_drawFilledCircle(&fb, cur_pixel, 255, 0, 0);
-            break;
-        case 2:
-            fb_drawFilledCircle(&fb, cur_pixel, 0, 255, 0);
-            break;
-        case 3:
-            fb_drawFilledCircle(&fb, cur_pixel, 0, 0, 255);
-            break;
-        default:
-            break;
-        }
-    }
-    return NULL;
-}
-
-void *fb_fill_background(void *arg)
-{
-    while (true)
-    {
-        fb_fillScr(&fb, 255, 255, 255);
-        usleep(5000);// 5ms 대기
     }
     return NULL;
 }

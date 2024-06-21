@@ -22,9 +22,7 @@ pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_t input, processor, sync_t, ball_thread[BALL_NUM], fb_fill_background_thread;
-int num_of_thread = 0;
-int thread_index = 0;
+pthread_t input, processor, sync_t, ball_thread[BALL_NUM];
 ThreadArgs *args[BALL_NUM];
 
 void *input_CMD(void *arg)
@@ -78,16 +76,12 @@ void *process_CMD(void *arg)
             send(client.sock, &pkt, sizeof(packet), 0);
             
             ballList.push_back(NULL);
-            
-            //ballList 출력해줘
 
-            idx = thread_index;
-            pthread_create(&ball_thread[idx], NULL, fb_print_ball, (void *)&idx);
-            thread_index += 1;
+            // pthread_create(&ball_thread[idx], NULL, fb_print_ball, (void *)&idx);
             break;
         case 'd':
             send(client.sock, buffer, sizeof(buffer), 0);
-            pthread_cancel(ball_thread[--thread_index]);
+            ballList.back() = NULL;
             break;
         case 'c':
             send(client.sock, buffer, sizeof(buffer), 0);
@@ -165,16 +159,6 @@ void *fb_print_ball(void *arg)
         default:
             break;
         }
-    }
-    return NULL;
-}
-
-void *fb_fill_background(void *arg)
-{
-    while (true)
-    {
-        fb_fillScr(&fb, 255, 255, 255);
-        usleep(5000);// 5ms 대기
     }
     return NULL;
 }

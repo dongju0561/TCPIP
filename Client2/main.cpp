@@ -37,13 +37,11 @@ int main() {
     pthread_create(&input, NULL, input_CMD, NULL);
     pthread_create(&processor, NULL, process_CMD, NULL);
     pthread_create(&sync_t, NULL, sync_list, NULL);
-    pthread_create(&fb_fill_background_thread, NULL, fb_fill_background, NULL);
 
     // 쓰레드 종료 대기
     pthread_join(input, NULL);
     pthread_join(processor, NULL);
     pthread_join(sync_t, NULL);
-    pthread_join(fb_fill_background_thread, NULL);
     for (int i = 0; i < BALL_NUM; i++)
     {
         pthread_join(ball_thread[i], NULL);

@@ -24,15 +24,12 @@ extern pthread_cond_t buffer_cond;
 extern pthread_mutex_t buffer_mutex;
 
 // 공 속도 변수
-extern pthread_t input, processor,sync_t ,ball_thread[BALL_NUM], fb_fill_background_thread;
-extern int num_of_thread;
-extern int thread_index;
+extern pthread_t input, processor,sync_t ,ball_thread[BALL_NUM];
 
 
 void *input_CMD(void *arg);
 void *process_CMD(void *arg);
 void *sync_list(void *arg);
 void *fb_print_ball(void *arg);
-void *fb_fill_background(void *arg);
 
 #endif // THREAD_H
