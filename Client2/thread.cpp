@@ -160,10 +160,11 @@ void *sync_list(void *arg)
     }
     return NULL;
 }
-void *monitor_list(void *arg){
-    while(true){
+void *monitor_list(void *arg)
+{
+    while (true)
+    {
         list<Ball *>::iterator it;
-        // cout << ballList.size() << endl;
         // mutex lock
         pthread_mutex_lock(&list_mutex);
         for (it = ballList.begin(); it != ballList.end(); it++)
@@ -184,12 +185,16 @@ void *fb_print_ball(void *arg)
 {
     bool is_twice = false;
     // 모든 리스트의 요소를 출력
-    while(true){
-        list<Ball *>::iterator it;
+     while (true)
+    {
         // mutex lock
         pthread_mutex_lock(&list_mutex);
-        for (it = ballList.begin(); it != ballList.end(); it++)
-        {
+        if(ballList.empty()){
+            pthread_mutex_unlock(&list_mutex);
+            continue;
+        }
+        for (list<Ball *>::iterator it = ballList.begin(); it != ballList.end(); ++it)
+        {   
             Ball *ball = *it;
             if (ball == NULL)
             {
@@ -200,7 +205,6 @@ void *fb_print_ball(void *arg)
                 continue;
             }
             pixel cur_pixel = ball->pos;
-            thread t1[3];
             switch (ball->client_num)
             {
             case 1:
@@ -216,23 +220,17 @@ void *fb_print_ball(void *arg)
                 break;
             }
         }
-        // mutex lock
+        // mutex unlock
         pthread_mutex_unlock(&list_mutex);
-        //두번째일때 흰색으로 채움
-        // if(is_twice){
-        //     fb_fillScr(&fb, 255, 255, 255);
-        //     is_twice = false;
-        // }
-        // else{
-        //     is_twice = true;
-        // }
     }
     return NULL;
 }
 
-void *erase_all_ball(void *arg){
-    while(true){
-        usleep(10000);
+void *erase_all_ball(void *arg)
+{
+    while (true)
+    {
+        usleep(50000);// 150ms 대기
         fb_fillScr(&fb, 255, 255, 255);
     }
 }

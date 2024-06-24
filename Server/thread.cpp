@@ -42,7 +42,7 @@ void move_ball()
         // 리스트에 있는 모든 공 객체의 위치를 업데이트
         // mutex lock
         pthread_mutex_lock(&list_mutex);
-        
+
         for (auto it = ballList.begin(); it != ballList.end(); ++it)
         {
             (*it)->pos.x += (*it)->speed.dx;
@@ -60,9 +60,8 @@ void move_ball()
         }
         pthread_cond_signal(&list_cond);
         pthread_mutex_unlock(&list_mutex);
-        usleep(300); // 90ms 대기
+        usleep(250); // 0.25초마다 위치 업데이트
         // mutex unlock
-        
     }
 }
 
@@ -169,9 +168,9 @@ void recv_cmd(int client_socket)
 // 클라이언트 리스트와 서버 리스트 동기화
 void sync_list(int client_socket)
 {
-    //패킷의 종류는 두 종류
-    //1. 리스트의 크기를 전달하는 패킷
-    //2. 리스트의 내용을 전달하는 패킷
+    // 패킷의 종류는 두 종류
+    // 1. 리스트의 크기를 전달하는 패킷
+    // 2. 리스트의 내용을 전달하는 패킷
 
     // 클라이언트 리스트와 서버 리스트 동기화
     int sock = client_socket;
@@ -182,7 +181,7 @@ void sync_list(int client_socket)
         pthread_cond_wait(&list_cond, &list_mutex);
         if (!ballList.empty())
         {
-            //리스트 사이즈 전송
+            // 리스트 사이즈 전송
             int list_size = ballList.size();
             sync_packet pkt;
             pkt.pkt_type = 0;
@@ -191,25 +190,32 @@ void sync_list(int client_socket)
             // 리스트 전체를 한번에 send
             for (auto it = ballList.begin(); it != ballList.end(); ++it)
             {
-                usleep(6000);
+                usleep(5500);
                 // 클라이언트로 전송
                 Ball *ball = *it;
                 pkt.pkt_type = 1;
                 pkt.ball = *ball;
                 send(sock, &pkt, sizeof(sync_packet), 0);
                 // send(sock, ball, sizeof(Ball), 0);
-
             }
+        }
+        else
+        {
+            sync_packet pkt;
+            pkt.pkt_type = 0;
+            pkt.list_size = 0;
+            send(sock, &pkt, sizeof(sync_packet), 0);
         }
         pthread_mutex_unlock(&list_mutex);
     }
 }
 
-void keep_accept(ServerSocket server, vector<int>& client_sockets, vector<thread>& threads){
-    //thread 처리 필요!
+void keep_accept(ServerSocket server, vector<int> &client_sockets, vector<thread> &threads)
+{
+    // thread 처리 필요!
     while (true)
     {
-        //클라이언트 소켓 벡터, 스레드 벡터에 추가
+        // 클라이언트 소켓 벡터, 스레드 벡터에 추가
         server.acceptConnection(client_sockets, threads);
     }
 }
