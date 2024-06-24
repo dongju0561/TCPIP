@@ -3,6 +3,8 @@
 #include <iostream>
 #include "socket.hpp"
 #include "thread.hpp"
+#include <fstream>
+#include <fcntl.h>
 
 using namespace std;
 
@@ -43,6 +45,17 @@ void ServerSocket::listenSocket(int backlog) {
 }
 
 void ServerSocket::acceptConnection(vector<int>& client_sockets, vector<thread>& threads) {
+    // Get the current time
+    time_t now = time(0);
+    char* timestamp;
+
+    //파일 디스크립터를 담을 변수
+    int new_fd = open("log.txt", O_WRONLY | O_APPEND | O_CREAT, 0644);
+    if (new_fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
     int addrlen = sizeof(address);
     int new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
     if (new_socket < 0) {
@@ -52,7 +65,15 @@ void ServerSocket::acceptConnection(vector<int>& client_sockets, vector<thread>&
     int int_buffer = 0;
     client_sockets.push_back(new_socket);
     recv(new_socket,&int_buffer,sizeof(int_buffer),0);
+    //클라이으트와 연결되었을때, 파일에 로그를 남김(날짜, 시간, 클라이언트 번호)
+    timestamp = ctime(&now);
+    timestamp[strlen(timestamp) - 1] = '\0'; // Remove the newline character
+    char log_buffer[100];
+    sprintf(log_buffer, "[%s] Client%d is connected\n", timestamp, int_buffer);
+    write(new_fd, log_buffer, strlen(log_buffer));
     cout << "Client" << int_buffer << " is connected" << endl;
     threads.push_back(thread(recv_cmd, new_socket));
     threads.push_back(thread(sync_list, new_socket));
+    
+    close(new_fd);
 }

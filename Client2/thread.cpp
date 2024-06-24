@@ -74,30 +74,36 @@ void *process_CMD(void *arg)
             pkt.cmd[0] = 'a';
             pkt.client_num = CLIENT_NUM;
             pkt.opt_num = -1;
-            if(buffer[1] == ':'){
-                //인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
+            if (buffer[1] == ':')
+            {
+                // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
                 pkt.opt_num = atoi(buffer + 2);
             }
+            // pkt 관련 데이터 출력
+            cout << "cmd: " << pkt.cmd[0]
+                 << " client_num: " << pkt.client_num
+                 << " opt_num: " << pkt.opt_num
+                 << endl;
             send(client.sock, &pkt, sizeof(packet), 0);
             break;
         case 'd':
-            send(client.sock, buffer, sizeof(buffer), 0);
-            if (ballList.size() != 1)
+            pkt.cmd[0] = 'd';
+            pkt.client_num = CLIENT_NUM;
+            pkt.opt_num = -1;
+            if (buffer[1] == ':')
             {
-                pthread_mutex_lock(&list_mutex);
-                ballList.pop_back();
-                pthread_mutex_unlock(&list_mutex);
+                // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
+                pkt.opt_num = atoi(buffer + 2);
             }
-            else{
-                pthread_mutex_lock(&list_mutex);
-                ballList.clear();
-                pthread_mutex_unlock(&list_mutex);
-            }
-                
+            // pkt 관련 데이터 출력
+            cout << "cmd: " << pkt.cmd[0]
+                 << " client_num: " << pkt.client_num
+                 << " opt_num: " << pkt.opt_num
+                 << endl;
+            send(client.sock, &pkt, sizeof(pkt), 0);
             break;
         case 'c':
             send(client.sock, buffer, sizeof(buffer), 0);
-            ballList.clear();
             break;
         default:
             break;
@@ -185,16 +191,17 @@ void *fb_print_ball(void *arg)
 {
     bool is_twice = false;
     // 모든 리스트의 요소를 출력
-     while (true)
+    while (true)
     {
         // mutex lock
         pthread_mutex_lock(&list_mutex);
-        if(ballList.empty()){
+        if (ballList.empty())
+        {
             pthread_mutex_unlock(&list_mutex);
             continue;
         }
         for (list<Ball *>::iterator it = ballList.begin(); it != ballList.end(); ++it)
-        {   
+        {
             Ball *ball = *it;
             if (ball == NULL)
             {
@@ -225,12 +232,11 @@ void *fb_print_ball(void *arg)
     }
     return NULL;
 }
-
 void *erase_all_ball(void *arg)
 {
     while (true)
     {
-        usleep(50000);// 150ms 대기
+        usleep(50000); // 150ms 대기
         fb_fillScr(&fb, 255, 255, 255);
     }
 }

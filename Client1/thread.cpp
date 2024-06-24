@@ -3,6 +3,7 @@
 #include <string>
 #include <arpa/inet.h>
 #include <list>
+#include <vector>
 #include <thread>
 #include "fbDraw.hpp"
 #include "socket.hpp"
@@ -79,6 +80,11 @@ void *process_CMD(void *arg)
                 // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
                 pkt.opt_num = atoi(buffer + 2);
             }
+            // pkt 관련 데이터 출력
+            cout << "cmd: " << pkt.cmd[0]
+                 << " client_num: " << pkt.client_num
+                 << " opt_num: " << pkt.opt_num
+                 << endl;
             send(client.sock, &pkt, sizeof(packet), 0);
             break;
         case 'd':
@@ -90,6 +96,11 @@ void *process_CMD(void *arg)
                 // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
                 pkt.opt_num = atoi(buffer + 2);
             }
+            // pkt 관련 데이터 출력
+            cout << "cmd: " << pkt.cmd[0]
+                 << " client_num: " << pkt.client_num
+                 << " opt_num: " << pkt.opt_num
+                 << endl;
             send(client.sock, &pkt, sizeof(pkt), 0);
             break;
         case 'c':
@@ -171,7 +182,7 @@ void *monitor_list(void *arg)
                 // cout << "NULL" << endl;
                 continue;
             }
-            cout << "idx: " << ball->idx << " x: " << ball->pos.x << " y: " << ball->pos.y << " client_num: " << ball->client_num << endl;
+            // cout << "idx: " << ball->idx << " x: " << ball->pos.x << " y: " << ball->pos.y << " client_num: " << ball->client_num << endl;
         }
         // mutex lock
         pthread_mutex_unlock(&list_mutex);
@@ -179,7 +190,8 @@ void *monitor_list(void *arg)
 }
 void *fb_print_ball(void *arg)
 {
-    bool is_twice = false;
+    // 이전 위치값(pixel)저장하는 vector
+    vector<pixel> prev_pos;
     // 모든 리스트의 요소를 출력
     while (true)
     {
@@ -227,7 +239,7 @@ void *erase_all_ball(void *arg)
 {
     while (true)
     {
-        usleep(50000); // 150ms 대기
+        usleep(150000); // 0.15초
         fb_fillScr(&fb, 255, 255, 255);
     }
 }
