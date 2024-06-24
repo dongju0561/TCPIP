@@ -47,6 +47,7 @@ typedef struct Node
 typedef struct
 {
 	char cmd[100];
+	int opt_num;
 	int client_num;
 }packet;
 

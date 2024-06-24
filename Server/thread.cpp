@@ -86,48 +86,65 @@ void recv_cmd(int client_socket)
         switch (pkt.cmd[0])
         {
         case 'a':
-            // 공 객체 생성
-            //전달 받은 클라이언트 번호를 인자로 전달
-            newBall = createBall(pkt.client_num);
 
             // 리스트 추가 시에는 클라이어트 전송 mutex 필요
             // mutex lock
-            pthread_mutex_lock(&list_mutex);
-            ballList.push_back(newBall);
-            pthread_mutex_unlock(&list_mutex);
-            // mutex unlock
 
-            // 리스트 현황 출력
-            // cout << "ballList size: " << ballList.size() << endl;
-            // for (auto it = ballList.begin(); it != ballList.end(); ++it)
-            // {
-            //     cout << "Ball Position: " << (*it)->pos.x << ", " << (*it)->pos.y
-            //          << " | Speed: " << (*it)->speed.dx << ", " << (*it)->speed.dy
-            //          << "Ball Index: " << (*it)->idx << "Ball type" << (int)(*it)->client_num << endl;
-            // }
+            if (pkt.opt_num == -1)
+            {
+                // 공 객체 생성
+                // 전달 받은 클라이언트 번호를 인자로 전달
+                newBall = createBall(pkt.client_num);
+                pthread_mutex_lock(&list_mutex);
+                ballList.push_back(newBall);
+                pthread_mutex_unlock(&list_mutex);
+            }
+            else
+            {
+                for (int i = 0; i < pkt.opt_num; i++)
+                {
+                    // 공 객체 생성
+                    // 전달 받은 클라이언트 번호를 인자로 전달
+                    newBall = createBall(pkt.client_num);
+                    pthread_mutex_lock(&list_mutex);
+                    ballList.push_back(newBall);
+                    pthread_mutex_unlock(&list_mutex);
+                }
+            }
+            // mutex unlock
             break;
         case 'd':
             // 리스트에서 마지막 객체 삭제
-            if (!ballList.empty())
+            // 리스트 삭제 시에는 클라이어트 전송 mutex 필요
+            if (pkt.opt_num == -1)
             {
-                // 리스트 삭제 시에는 클라이어트 전송 mutex 필요
                 // mutex lock
                 pthread_mutex_lock(&list_mutex);
-                ball_index--;
-                delete ballList.back();
-                ballList.pop_back();
+                if (!ballList.empty())
+                {
+                    ball_index--;
+                    delete ballList.back();
+                    ballList.pop_back();
+                }
                 pthread_mutex_unlock(&list_mutex);
                 // mutex unlock
             }
-
-            // 리스트 현황 출력
-            // cout << "ballList size: " << ballList.size() << endl;
-            // for (auto it = ballList.begin(); it != ballList.end(); ++it)
-            // {
-            //     cout << "Ball Position: " << (*it)->pos.x << ", " << (*it)->pos.y
-            //          << " | Speed: " << (*it)->speed.dx << ", " << (*it)->speed.dy
-            //          << "Ball Index: " << (*it)->idx << endl;
-            // }
+            else
+            {
+                for (int i = 0; i < pkt.opt_num; i++)
+                {
+                    // mutex lock
+                    pthread_mutex_lock(&list_mutex);
+                    if (!ballList.empty())
+                    {
+                        ball_index--;
+                        delete ballList.back();
+                        ballList.pop_back();
+                    }
+                    pthread_mutex_unlock(&list_mutex);
+                    // mutex unlock
+                }
+            }
             break;
         case 'c':
             // 리스트 초기화
@@ -142,9 +159,6 @@ void recv_cmd(int client_socket)
             ballList.clear();
             pthread_mutex_unlock(&list_mutex);
             // mutex unlock
-
-            // 리스트 현황 출력
-            // cout << "ballList size: " << ballList.size() << endl;
             break;
         default:
             break;

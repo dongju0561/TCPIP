@@ -7,7 +7,7 @@
 #include <cstring>
 #include "common.hpp"
 
-#define BUFFER_SIZE 5
+#define BUFFER_SIZE 100
 #define BALL_NUM 100
 
 typedef struct {

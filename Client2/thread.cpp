@@ -67,22 +67,37 @@ void *process_CMD(void *arg)
         {
             pthread_cond_wait(&buffer_cond, &buffer_mutex);
         }
-        
+
         switch (buffer[0])
         {
         case 'a':
             pkt.cmd[0] = 'a';
             pkt.client_num = CLIENT_NUM;
+            pkt.opt_num = -1;
+            if(buffer[1] == ':'){
+                //인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
+                pkt.opt_num = atoi(buffer + 2);
+            }
             send(client.sock, &pkt, sizeof(packet), 0);
             break;
         case 'd':
             send(client.sock, buffer, sizeof(buffer), 0);
-            cout << "ballList size: " << ballList.size() << endl;   
-            ballList.pop_back();
-            cout << "ballList size: " << ballList.size() << endl;
+            if (ballList.size() != 1)
+            {
+                pthread_mutex_lock(&list_mutex);
+                ballList.pop_back();
+                pthread_mutex_unlock(&list_mutex);
+            }
+            else{
+                pthread_mutex_lock(&list_mutex);
+                ballList.clear();
+                pthread_mutex_unlock(&list_mutex);
+            }
+                
             break;
         case 'c':
             send(client.sock, buffer, sizeof(buffer), 0);
+            ballList.clear();
             break;
         default:
             break;
@@ -106,7 +121,7 @@ void *sync_list(void *arg)
     while (true)
     {
         // 클라이언트 리스트와 서버 리스트 동기화
-        
+
         // ball = new Ball;
 
         recv(client.sock, &pkt, sizeof(sync_packet), 0);
@@ -137,11 +152,10 @@ void *sync_list(void *arg)
         default:
             break;
         }
-        //list 사이즈/데이터 업데이트 
+        // list 사이즈/데이터 업데이트
 
-        //idx로 advace를 이용하여 ballList에 추가
+        // idx로 advace를 이용하여 ballList에 추가
 
-        
         // mutex unlock
     }
     return NULL;
