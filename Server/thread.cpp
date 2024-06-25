@@ -21,8 +21,8 @@ pthread_cond_t list_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct timespec start_t, end_t;
-
-pthread_t receive, move_calculator, sync_t;
+ 
+pthread_t receive, move_calculator, sync_t, ball_move_threads[BALL_NUM];
 ThreadArgs *args[BALL_NUM];
 int ball_index = 0;
 
@@ -64,6 +64,7 @@ void log_ball_action(int fd, const char *action, int client_num)
 void handle_add_balls(int fd, int client_num, int opt_num)
 {
     Ball *newBall;
+    ball_args *ball_args;
     if (opt_num == -1)
     {
         pthread_mutex_lock(&list_mutex);
@@ -72,6 +73,9 @@ void handle_add_balls(int fd, int client_num, int opt_num)
         log_ball_action(fd, "added", newBall->client_num);
         // 공 객체를 생성하면서 할당된 메모리 정도를 로그에 남김
         ballList.push_back(newBall);
+
+        pthread_create(&ball_move_threads[newBall->idx], NULL, move_ball, newBall);
+
         // ballList 요소 전체 출력
         pthread_mutex_unlock(&list_mutex);
     }
@@ -85,6 +89,8 @@ void handle_add_balls(int fd, int client_num, int opt_num)
             // 공 객체를 생성하면서 할당된 메모리 정도를 로그에 남김
 
             ballList.push_back(newBall);
+            
+            pthread_create(&ball_move_threads[newBall->idx], NULL, move_ball, newBall);
         }
         pthread_mutex_unlock(&list_mutex);
     }
@@ -92,14 +98,18 @@ void handle_add_balls(int fd, int client_num, int opt_num)
 
 void handle_delete_balls(int fd, int opt_num)
 {
+
     pthread_mutex_lock(&list_mutex);
-    if(ballList.empty())
+    if (ballList.empty())
     {
         pthread_mutex_unlock(&list_mutex);
         return;
     }
     if (opt_num == -1)
     {
+        // last thread cancel
+        cout << "Ball index: " << ball_index << endl;
+        pthread_cancel(ball_move_threads[--ball_index]);
         log_ball_action(fd, "deleted", ballList.back()->client_num);
         delete ballList.back();
         ballList.pop_back();
@@ -108,11 +118,14 @@ void handle_delete_balls(int fd, int opt_num)
     {
         for (int i = 0; i < opt_num && !ballList.empty(); ++i)
         {
+            // last thread cancel
+            cout << "Ball index: " << ball_index << endl;
+            pthread_cancel(ball_move_threads[--ball_index]);
             log_ball_action(fd, "deleted", ballList.back()->client_num);
             delete ballList.back();
             ballList.pop_back();
         }
-        if(ballList.empty())
+        if (ballList.empty())
         {
             cout << "Ball list is empty" << endl;
         }
@@ -121,31 +134,37 @@ void handle_delete_balls(int fd, int opt_num)
     pthread_mutex_unlock(&list_mutex);
 }
 
-void move_ball()
+void *move_ball(void *arg)
 {
+    // get ballList's address from arg
+
+    Ball *ball = (Ball *)arg;
     while (true)
     {
-        pthread_mutex_lock(&list_mutex);
 
-        for (auto &ball : ballList)
+        ball->pos.x += ball->speed.dx;
+        ball->pos.y += ball->speed.dy;
+
+        if (ball->pos.x <= 0 || ball->pos.x >= 1280)
         {
-            ball->pos.x += ball->speed.dx;
-            ball->pos.y += ball->speed.dy;
-
-            if (ball->pos.x <= 0 || ball->pos.x >= 1280)
-            {
-                ball->speed.dx *= -1;
-            }
-            if (ball->pos.y <= 0 || ball->pos.y >= 800)
-            {
-                ball->speed.dy *= -1;
-            }
+            ball->speed.dx *= -1;
         }
-        pthread_cond_signal(&list_cond);
-        pthread_mutex_unlock(&list_mutex);
+        if (ball->pos.y <= 0 || ball->pos.y >= 800)
+        {
+            ball->speed.dy *= -1;
+        }
 
-        usleep(150); // 0.15초마다 이동
+        // pthread_mutex_lock(&list_mutex);
+
+        // access to ballList with ball->idx by using advance
+        auto it = ballList.begin();
+        advance(it, ball->idx);
+        *it = ball;
+
+        // pthread_mutex_unlock(&list_mutex);
+        usleep(9000); //
     }
+    return NULL;
 }
 
 void recv_cmd(int client_socket)
@@ -191,7 +210,8 @@ void sync_list(int client_socket)
     while (true)
     {
         pthread_mutex_lock(&list_mutex);
-        pthread_cond_wait(&list_cond, &list_mutex);
+
+        // pthread_cond_wait(&list_cond, &list_mutex);
         if (!ballList.empty())
         {
             pkt.pkt_type = 0;
@@ -200,7 +220,7 @@ void sync_list(int client_socket)
 
             for (const auto &ball : ballList)
             {
-                usleep(3500);
+                // usleep(3500);
                 pkt.pkt_type = 1;
                 pkt.ball = *ball;
                 send(client_socket, &pkt, sizeof(sync_packet), 0);
@@ -212,6 +232,8 @@ void sync_list(int client_socket)
             pkt.list_size = 0;
             send(client_socket, &pkt, sizeof(sync_packet), 0);
         }
+
+        // calculate time
         pthread_mutex_unlock(&list_mutex);
     }
 }
@@ -224,13 +246,17 @@ void keep_accept(ServerSocket server, vector<int> &client_sockets, vector<thread
     }
 }
 
-// void monitor_list()
-// {
-//     while (true)
-//     {
-//         pthread_mutex_lock(&list_mutex);
-//         cout << "Current ball list size: " << ballList.size() << endl;
-//         pthread_mutex_unlock(&list_mutex);
-//         usleep(1000000); // 1초마다 출력
-//     }
-// }
+void monitor_list()
+{
+    while (true)
+    {
+        // pthread_mutex_lock(&list_mutex);
+        // // cout << "Current ball list size: " << ballList.size() << endl;
+        // for (const auto &ball : ballList)
+        // {
+        //     cout << "Ball idx: " << ball->idx << ", Client num: " << ball->client_num << ", Position: (" << ball->pos.x << ", " << ball->pos.y << "), Speed: (" << ball->speed.dx << ", " << ball->speed.dy << ")" << endl;
+        // }
+        // pthread_mutex_unlock(&list_mutex);
+        // usleep(1000); // 1초마다 출력
+    }
+}

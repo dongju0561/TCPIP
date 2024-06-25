@@ -22,7 +22,7 @@ pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t buffer_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-pthread_t input, processor, sync_t, print_ball, monitor, erase_all_ball_v;
+pthread_t input, processor, sync_t, print_ball, monitor, erase_all_ball_v, fb_fill_background_thread;
 ThreadArgs *args[BALL_NUM];
 extern int num_of_list_element;
 
@@ -155,10 +155,6 @@ void *sync_list(void *arg)
 
 void *fb_print_ball(void *arg)
 {
-    // 이전 위치값(pixel)저장하는 vector
-    // 임시방편으로 1000개의 요소를 가지는 vector로 초기화
-    vector<pixel> pre_pixels(1000);
-    vector<pixel> changed_pixels(1000);
     while (true)
     {
         list<Ball *> ballsToProcess;
@@ -176,7 +172,6 @@ void *fb_print_ball(void *arg)
         {
             continue;
         }
-        changed_pixels = pre_pixels;
         for (list<Ball *>::iterator it = ballsToProcess.begin(); it != ballsToProcess.end(); ++it)
         {
             Ball *ball = *it;
@@ -192,9 +187,8 @@ void *fb_print_ball(void *arg)
 
             pixel cur_pixel = ball->pos;
             int idx = ball->idx;
-
+            // cout << "idx: " << idx << " x: " << cur_pixel.x << " y: " << cur_pixel.y << " client_num: " << ball->client_num << endl;
             // 이전 위치가 존재하지 않을 경우
-            fb_drawFilledCircle(&fb, pre_pixels[idx], 255, 255, 255);
 
             switch (ball->client_num)
             {
@@ -210,18 +204,7 @@ void *fb_print_ball(void *arg)
             default:
                 break;
             }
-            // 현재 위치값을 이전 위치값(pre_pixels[idx])으로 저장
-            pre_pixels[idx] = cur_pixel;
         }
-        //changed_pixels와 pre_pixels를 비교하여 같다면 부분 흰색 원 칠함
-        for (int i = 0; i < 1000; i++)
-        {
-            if (changed_pixels[i].x == pre_pixels[i].x && changed_pixels[i].y == pre_pixels[i].y)
-            {
-                fb_drawFilledCircle(&fb, pre_pixels[i], 255, 255, 255);
-            }
-        }
-        
     }
 
     // 모든 리스트의 요소를 출력
@@ -275,7 +258,15 @@ void *fb_print_ball(void *arg)
     // }
     return NULL;
 }
-
+void *fb_fill_background(void *arg)
+{
+    while (true)
+    {
+        fb_fillScr(&fb, 255, 255, 255);
+        usleep(90000); // 5ms 대기
+    }
+    return NULL;
+}
 // void *monitor_list(void *arg)
 // {
 //     while (true)

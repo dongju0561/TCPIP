@@ -9,6 +9,8 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
+using namespace std;
+
 typedef struct dev_fb_t
 {
 	int fbfd;
@@ -50,5 +52,11 @@ typedef struct{
 	int list_size;
 	Ball ball;
 }sync_packet;
+
+typedef struct
+{
+	Ball *ball;
+	iterator<Ball *, list<Ball *>> it;
+}ball_args;
 
 #endif// COMMON_H

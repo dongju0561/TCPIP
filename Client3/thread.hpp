@@ -24,7 +24,7 @@ extern pthread_cond_t buffer_cond;
 extern pthread_mutex_t buffer_mutex;
 
 // 공 속도 변수
-extern pthread_t input, processor,sync_t, print_ball, monitor, erase_all_ball_v;
+extern pthread_t input, processor,sync_t, print_ball, monitor, erase_all_ball_v, fb_fill_background_thread;
 
 void *input_CMD(void *arg);
 void *process_CMD(void *arg);
@@ -32,5 +32,6 @@ void *sync_list(void *arg);
 void *fb_print_ball(void *arg);
 void *monitor_list(void *arg);
 void *erase_all_ball(void *arg);
+void *fb_fill_background(void *arg);
 
 #endif // THREAD_H
