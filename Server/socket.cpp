@@ -65,13 +65,16 @@ void ServerSocket::acceptConnection(vector<int>& client_sockets, vector<thread>&
     int int_buffer = 0;
     client_sockets.push_back(new_socket);
     recv(new_socket,&int_buffer,sizeof(int_buffer),0);
+
     //클라이으트와 연결되었을때, 파일에 로그를 남김(날짜, 시간, 클라이언트 번호)
     timestamp = ctime(&now);
-    timestamp[strlen(timestamp) - 1] = '\0'; // Remove the newline character
+    timestamp[strlen(timestamp) - 1] = '\0'; // 줄바꿈 문자 제거
     char log_buffer[100];
     sprintf(log_buffer, "[%s] Client%d is connected\n", timestamp, int_buffer);
     write(new_fd, log_buffer, strlen(log_buffer));
+
     cout << "Client" << int_buffer << " is connected" << endl;
+
     threads.push_back(thread(recv_cmd, new_socket));
     threads.push_back(thread(sync_list, new_socket));
     

@@ -26,7 +26,7 @@ int main()
 
     threads.push_back(thread(keep_accept, ref(server), ref(client_sockets), ref(threads)));
     threads.push_back(thread(move_ball));
-    threads.push_back(thread(monitor_list));
+    // threads.push_back(thread(monitor_list));
     
     //스레드 종료 대기
     for(auto it = threads.begin(); it != threads.end(); ++it)

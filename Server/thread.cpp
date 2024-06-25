@@ -71,16 +71,8 @@ void handle_add_balls(int fd, int client_num, int opt_num)
         newBall = createBall(client_num);
         log_ball_action(fd, "added", newBall->client_num);
         // 공 객체를 생성하면서 할당된 메모리 정도를 로그에 남김
-        for (auto &ball : ballList)
-        {
-            cout << "ball idx: " << ball->idx << " client_num: " << ball->client_num << " pos: " << ball->pos.x << ", " << ball->pos.y << " speed: " << ball->speed.dx << ", " << ball->speed.dy << endl;
-        }
         ballList.push_back(newBall);
         // ballList 요소 전체 출력
-        for (auto &ball : ballList)
-        {
-            cout << "ball idx: " << ball->idx << " client_num: " << ball->client_num << " pos: " << ball->pos.x << ", " << ball->pos.y << " speed: " << ball->speed.dx << ", " << ball->speed.dy << endl;
-        }
         pthread_mutex_unlock(&list_mutex);
     }
     else
@@ -155,11 +147,6 @@ void recv_cmd(int client_socket)
         {
             break;
         }
-        // pkt 관련 데이터 출력
-        cout << "cmd: " << pkt.cmd[0]
-             << " client_num: " << pkt.client_num
-             << " opt_num: " << pkt.opt_num
-             << endl;
         switch (pkt.cmd[0])
         {
         case 'a':
@@ -218,13 +205,13 @@ void keep_accept(ServerSocket server, vector<int> &client_sockets, vector<thread
     }
 }
 
-void monitor_list()
-{
-    while (true)
-    {
-        pthread_mutex_lock(&list_mutex);
-        cout << "Current ball list size: " << ballList.size() << endl;
-        pthread_mutex_unlock(&list_mutex);
-        usleep(1000000); // 1초마다 출력
-    }
-}
+// void monitor_list()
+// {
+//     while (true)
+//     {
+//         pthread_mutex_lock(&list_mutex);
+//         cout << "Current ball list size: " << ballList.size() << endl;
+//         pthread_mutex_unlock(&list_mutex);
+//         usleep(1000000); // 1초마다 출력
+//     }
+// }

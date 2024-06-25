@@ -79,11 +79,6 @@ void *process_CMD(void *arg)
                 // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
                 pkt.opt_num = atoi(buffer + 2);
             }
-            // pkt 관련 데이터 출력
-            cout << "cmd: " << pkt.cmd[0]
-                 << " client_num: " << pkt.client_num
-                 << " opt_num: " << pkt.opt_num
-                 << endl;
             send(client.sock, &pkt, sizeof(packet), 0);
             break;
         case 'd':
@@ -95,11 +90,6 @@ void *process_CMD(void *arg)
                 // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
                 pkt.opt_num = atoi(buffer + 2);
             }
-            // pkt 관련 데이터 출력
-            cout << "cmd: " << pkt.cmd[0]
-                 << " client_num: " << pkt.client_num
-                 << " opt_num: " << pkt.opt_num
-                 << endl;
             send(client.sock, &pkt, sizeof(pkt), 0);
             break;
         case 'c':

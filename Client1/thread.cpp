@@ -80,11 +80,6 @@ void *process_CMD(void *arg)
                 // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
                 pkt.opt_num = atoi(buffer + 2);
             }
-            // pkt 관련 데이터 출력
-            cout << "cmd: " << pkt.cmd[0]
-                 << " client_num: " << pkt.client_num
-                 << " opt_num: " << pkt.opt_num
-                 << endl;
             send(client.sock, &pkt, sizeof(packet), 0);
             break;
         case 'd':
@@ -96,11 +91,6 @@ void *process_CMD(void *arg)
                 // 인덱스 두번째부터 마지막 인덱스의 문자를 인식하여 정수로 변화 후 pkt.opt_num에 저장
                 pkt.opt_num = atoi(buffer + 2);
             }
-            // pkt 관련 데이터 출력
-            cout << "cmd: " << pkt.cmd[0]
-                 << " client_num: " << pkt.client_num
-                 << " opt_num: " << pkt.opt_num
-                 << endl;
             send(client.sock, &pkt, sizeof(pkt), 0);
             break;
         case 'c':
@@ -159,35 +149,10 @@ void *sync_list(void *arg)
         default:
             break;
         }
-        // list 사이즈/데이터 업데이트
-
-        // idx로 advace를 이용하여 ballList에 추가
-
-        // mutex unlock
     }
     return NULL;
 }
-void *monitor_list(void *arg)
-{
-    while (true)
-    {
-        list<Ball *>::iterator it;
-        // mutex lock
-        pthread_mutex_lock(&list_mutex);
-        for (it = ballList.begin(); it != ballList.end(); it++)
-        {
-            Ball *ball = *it;
-            if (ball == NULL)
-            {
-                // cout << "NULL" << endl;
-                continue;
-            }
-            // cout << "idx: " << ball->idx << " x: " << ball->pos.x << " y: " << ball->pos.y << " client_num: " << ball->client_num << endl;
-        }
-        // mutex lock
-        pthread_mutex_unlock(&list_mutex);
-    }
-}
+
 void *fb_print_ball(void *arg)
 {
     // 이전 위치값(pixel)저장하는 vector
@@ -243,3 +208,25 @@ void *erase_all_ball(void *arg)
         fb_fillScr(&fb, 255, 255, 255);
     }
 }
+
+// void *monitor_list(void *arg)
+// {
+//     while (true)
+//     {
+//         list<Ball *>::iterator it;
+//         // mutex lock
+//         pthread_mutex_lock(&list_mutex);
+//         for (it = ballList.begin(); it != ballList.end(); it++)
+//         {
+//             Ball *ball = *it;
+//             if (ball == NULL)
+//             {
+//                 // cout << "NULL" << endl;
+//                 continue;
+//             }
+//             // cout << "idx: " << ball->idx << " x: " << ball->pos.x << " y: " << ball->pos.y << " client_num: " << ball->client_num << endl;
+//         }
+//         // mutex lock
+//         pthread_mutex_unlock(&list_mutex);
+//     }
+// }

@@ -28,7 +28,6 @@ typedef struct pixel_t
 
 typedef struct 
 {
-	int speed;
     int dx; //case: -1, 1
     int dy; //case: -1, 1
 } Speed;
@@ -40,12 +39,6 @@ typedef struct
 	pixel pos;
 	Speed speed;
 }Ball;
-
-typedef struct Node
-{
-    Ball *data;
-    struct Node *next;
-}node;
 
 typedef struct
 {
