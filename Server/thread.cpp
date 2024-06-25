@@ -172,7 +172,7 @@ void sync_list(int client_socket)
     while (true)
     {
         pthread_mutex_lock(&list_mutex);
-        pthread_cond_wait(&list_cond, &list_mutex);    
+        pthread_cond_wait(&list_cond, &list_mutex);
         if (!ballList.empty())
         {
             pkt.pkt_type = 0;

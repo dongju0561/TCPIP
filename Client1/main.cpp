@@ -34,23 +34,17 @@ int main() {
     // 소켓 생성
     client.connectToServer("127.0.0.1",PORT);
 
-    fb_fillScr(&fb,255,255,255);
-
     // 입력 및 처리 쓰레드 생성
     pthread_create(&input, NULL, input_CMD, NULL);
     pthread_create(&processor, NULL, process_CMD, NULL);
     pthread_create(&sync_t, NULL, sync_list, NULL);
     pthread_create(&print_ball, NULL, fb_print_ball, NULL);
-    // pthread_create(&monitor, NULL, monitor_list, NULL);
-    pthread_create(&erase_all_ball_v, NULL, erase_all_ball, NULL);
 
     // 쓰레드 종료 대기
     pthread_join(input, NULL);
     pthread_join(processor, NULL);
     pthread_join(sync_t, NULL);
     pthread_join(print_ball, NULL);
-    // pthread_join(monitor, NULL);
-    pthread_join(erase_all_ball_v, NULL);
 
     // 소켓 닫기
     close(client.sock);

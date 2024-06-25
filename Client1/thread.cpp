@@ -156,7 +156,11 @@ void *sync_list(void *arg)
 void *fb_print_ball(void *arg)
 {
     // 이전 위치값(pixel)저장하는 vector
-    vector<pixel> prev_pos;
+    vector<pixel> pre_pixels;
+
+    //임시방편으로 1000개의 요소를 가지는 vector로 초기화
+    pre_pixels.resize(1000);
+
     // 모든 리스트의 요소를 출력
     while (true)
     {
@@ -170,6 +174,7 @@ void *fb_print_ball(void *arg)
         for (list<Ball *>::iterator it = ballList.begin(); it != ballList.end(); ++it)
         {
             Ball *ball = *it;
+
             if (ball == NULL)
             {
                 continue;
@@ -178,10 +183,17 @@ void *fb_print_ball(void *arg)
             {
                 continue;
             }
+
             pixel cur_pixel = ball->pos;
+            int idx = ball->idx;
+
+            //이전 위치가 존재하지 않을 경우
+            fb_drawFilledCircle(&fb, pre_pixels[idx], 0, 0, 0);
+
             switch (ball->client_num)
             {
             case 1:
+                
                 fb_drawFilledCircle(&fb, cur_pixel, 255, 0, 0);
                 break;
             case 2:
@@ -193,20 +205,13 @@ void *fb_print_ball(void *arg)
             default:
                 break;
             }
+            //현재 위치값을 이전 위치값(pre_pixels[idx])으로 저장
+            pre_pixels[idx] = cur_pixel;
         }
         // mutex unlock
         pthread_mutex_unlock(&list_mutex);
     }
     return NULL;
-}
-
-void *erase_all_ball(void *arg)
-{
-    while (true)
-    {
-        usleep(150000); // 0.15초
-        fb_fillScr(&fb, 255, 255, 255);
-    }
 }
 
 // void *monitor_list(void *arg)
