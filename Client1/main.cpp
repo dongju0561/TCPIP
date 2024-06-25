@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <list>
 #include <thread>
+#include <vector>
 #include <pthread.h> // pthread 사용을 위한 헤더
 #include "fbDraw.hpp" // fbDraw 클래스 헤더
 #include "thread.hpp"
@@ -18,6 +19,7 @@ using namespace std;
 extern ClientSocket client;
 
 int num_of_list_element = 0;
+vector<pixel> pre_pixels(1000);
 
 list<Ball *> ballList;
 

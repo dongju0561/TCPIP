@@ -156,22 +156,28 @@ void *sync_list(void *arg)
 void *fb_print_ball(void *arg)
 {
     // 이전 위치값(pixel)저장하는 vector
-    vector<pixel> pre_pixels;
-
-    //임시방편으로 1000개의 요소를 가지는 vector로 초기화
-    pre_pixels.resize(1000);
-
-    // 모든 리스트의 요소를 출력
+    // 임시방편으로 1000개의 요소를 가지는 vector로 초기화
+    vector<pixel> pre_pixels(1000);
+    vector<pixel> changed_pixels(1000);
     while (true)
     {
+        list<Ball *> ballsToProcess;
+
         // mutex lock
         pthread_mutex_lock(&list_mutex);
-        if (ballList.empty())
+        if (!ballList.empty())
         {
-            pthread_mutex_unlock(&list_mutex);
+            ballsToProcess = ballList;
+        }
+        pthread_mutex_unlock(&list_mutex);
+        // mutex unlock
+
+        if (ballsToProcess.empty())
+        {
             continue;
         }
-        for (list<Ball *>::iterator it = ballList.begin(); it != ballList.end(); ++it)
+        changed_pixels = pre_pixels;
+        for (list<Ball *>::iterator it = ballsToProcess.begin(); it != ballsToProcess.end(); ++it)
         {
             Ball *ball = *it;
 
@@ -187,13 +193,12 @@ void *fb_print_ball(void *arg)
             pixel cur_pixel = ball->pos;
             int idx = ball->idx;
 
-            //이전 위치가 존재하지 않을 경우
-            fb_drawFilledCircle(&fb, pre_pixels[idx], 0, 0, 0);
+            // 이전 위치가 존재하지 않을 경우
+            fb_drawFilledCircle(&fb, pre_pixels[idx], 255, 255, 255);
 
             switch (ball->client_num)
             {
             case 1:
-                
                 fb_drawFilledCircle(&fb, cur_pixel, 255, 0, 0);
                 break;
             case 2:
@@ -205,12 +210,69 @@ void *fb_print_ball(void *arg)
             default:
                 break;
             }
-            //현재 위치값을 이전 위치값(pre_pixels[idx])으로 저장
+            // 현재 위치값을 이전 위치값(pre_pixels[idx])으로 저장
             pre_pixels[idx] = cur_pixel;
         }
-        // mutex unlock
-        pthread_mutex_unlock(&list_mutex);
+        //changed_pixels와 pre_pixels를 비교하여 같다면 부분 흰색 원 칠함
+        for (int i = 0; i < 1000; i++)
+        {
+            if (changed_pixels[i].x == pre_pixels[i].x && changed_pixels[i].y == pre_pixels[i].y)
+            {
+                fb_drawFilledCircle(&fb, pre_pixels[i], 255, 255, 255);
+            }
+        }
+        
     }
+
+    // 모든 리스트의 요소를 출력
+    // while (true)
+    // {
+    //     // mutex lock
+    //     pthread_mutex_lock(&list_mutex);
+    //     if (ballList.empty())
+    //     {
+    //         pthread_mutex_unlock(&list_mutex);
+    //         continue;
+    //     }
+    //     for (list<Ball *>::iterator it = ballList.begin(); it != ballList.end(); ++it)
+    //     {
+    //         Ball *ball = *it;
+
+    //         if (ball == NULL)
+    //         {
+    //             continue;
+    //         }
+    //         if (ball->pos.x == -1 || ball->pos.y == -1 || ball->pos.x == 1 || ball->pos.y == 1)
+    //         {
+    //             continue;
+    //         }
+
+    //         pixel cur_pixel = ball->pos;
+    //         int idx = ball->idx;
+
+    //         //이전 위치가 존재하지 않을 경우
+    //         fb_drawFilledCircle(&fb, pre_pixels[idx], 255, 255, 255);
+
+    //         switch (ball->client_num)
+    //         {
+    //         case 1:
+    //             fb_drawFilledCircle(&fb, cur_pixel, 255, 0, 0);
+    //             break;
+    //         case 2:
+    //             fb_drawFilledCircle(&fb, cur_pixel, 0, 255, 0);
+    //             break;
+    //         case 3:
+    //             fb_drawFilledCircle(&fb, cur_pixel, 0, 0, 255);
+    //             break;
+    //         default:
+    //             break;
+    //         }
+    //         //현재 위치값을 이전 위치값(pre_pixels[idx])으로 저장
+    //         pre_pixels[idx] = cur_pixel;
+    //     }
+    //     // mutex unlock
+    //     pthread_mutex_unlock(&list_mutex);
+    // }
     return NULL;
 }
 

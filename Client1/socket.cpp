@@ -14,7 +14,6 @@ ClientSocket::ClientSocket() {
     if (sock < 0) {
         perror("Socket creation error");
     }
-    // set_nonblocking(this->sock);
 }
 ClientSocket::~ClientSocket() {
     close(sock);
@@ -33,19 +32,3 @@ void ClientSocket::connectToServer(const char *ip_address, int port){
     int client_num = CLIENT_NUM;
     send(sock, &client_num, sizeof(client_num), 0);
 }
-// 소켓 파일 디스크립터를 논블로킹 모드로 설정
-int set_nonblocking(int sockfd) {
-    int flags = fcntl(sockfd, F_GETFL, 0);
-    if (flags == -1) {
-        perror("fcntl F_GETFL");
-        return -1;
-    }
-    flags |= O_NONBLOCK;
-    if (fcntl(sockfd, F_SETFL, flags) == -1) {
-        perror("fcntl F_SETFL");
-        return -1;
-    }
-    return 0;
-}
-
-

@@ -200,7 +200,7 @@ void sync_list(int client_socket)
 
             for (const auto &ball : ballList)
             {
-                usleep(1500);
+                usleep(3500);
                 pkt.pkt_type = 1;
                 pkt.ball = *ball;
                 send(client_socket, &pkt, sizeof(sync_packet), 0);
