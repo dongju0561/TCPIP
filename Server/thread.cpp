@@ -93,12 +93,31 @@ void handle_add_balls(int fd, int client_num, int opt_num)
 void handle_delete_balls(int fd, int opt_num)
 {
     pthread_mutex_lock(&list_mutex);
-    for (int i = 0; i < opt_num && !ballList.empty(); ++i)
+    if(ballList.empty())
+    {
+        pthread_mutex_unlock(&list_mutex);
+        return;
+    }
+    if (opt_num == -1)
     {
         log_ball_action(fd, "deleted", ballList.back()->client_num);
         delete ballList.back();
         ballList.pop_back();
     }
+    else
+    {
+        for (int i = 0; i < opt_num && !ballList.empty(); ++i)
+        {
+            log_ball_action(fd, "deleted", ballList.back()->client_num);
+            delete ballList.back();
+            ballList.pop_back();
+        }
+        if(ballList.empty())
+        {
+            cout << "Ball list is empty" << endl;
+        }
+    }
+
     pthread_mutex_unlock(&list_mutex);
 }
 
