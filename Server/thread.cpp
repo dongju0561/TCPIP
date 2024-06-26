@@ -134,6 +134,32 @@ void handle_delete_balls(int fd, int opt_num)
     pthread_mutex_unlock(&list_mutex);
 }
 
+void handle_delete_all_balls(int fd, int opt_num)
+{
+
+    pthread_mutex_lock(&list_mutex);
+    if (ballList.empty())
+    {
+        pthread_mutex_unlock(&list_mutex);
+        return;
+    }
+    for (int i = 0; i < opt_num && !ballList.empty(); ++i)
+    {
+        // last thread cancel
+        cout << "Ball index: " << ball_index << endl;
+        pthread_cancel(ball_move_threads[--ball_index]);
+        log_ball_action(fd, "deleted", ballList.back()->client_num);
+        delete ballList.back();
+        ballList.pop_back();
+    }
+    if (ballList.empty())
+    {
+        cout << "Ball list is empty" << endl;
+    }
+
+    pthread_mutex_unlock(&list_mutex);
+}
+
 void *move_ball(void *arg)
 {
     // get ballList's address from arg
@@ -193,8 +219,11 @@ void recv_cmd(int client_socket)
         case 'd':
             handle_delete_balls(new_fd, pkt.opt_num);
             break;
-        case 'c':
-            handle_delete_balls(new_fd, ballList.size());
+        case 'x':
+            handle_delete_all_balls(new_fd, ballList.size());
+            cout << "프로그램 종료" << endl;
+            sleep(1);
+            exit(0);
             break;
         default:
             break;
