@@ -267,7 +267,7 @@ void *fb_fill_background(void *arg)
     while (true)
     {
         fb_fillScr(&fb, 255, 255, 255);
-        usleep(90000); // 5ms 대기
+        usleep(80000); // 5ms 대기
     }
     return NULL;
 }
