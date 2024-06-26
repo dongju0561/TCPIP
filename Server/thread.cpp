@@ -222,7 +222,7 @@ void recv_cmd(int client_socket)
         case 'x':
             handle_delete_all_balls(new_fd, ballList.size());
             cout << "프로그램 종료" << endl;
-            sleep(1);
+            sleep(2);
             exit(0);
             break;
         default:

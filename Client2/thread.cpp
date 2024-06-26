@@ -93,8 +93,12 @@ void *process_CMD(void *arg)
             }
             send(client.sock, &pkt, sizeof(pkt), 0);
             break;
-        case 'c':
-            send(client.sock, buffer, sizeof(buffer), 0);
+        case 'x':
+            pkt.cmd[0] = 'x';
+            send(client.sock, &pkt, sizeof(pkt), 0);
+            cout << "프로그램 종료" << endl;
+            sleep(1);
+            exit(0);
             break;
         default:
             break;
@@ -263,7 +267,7 @@ void *fb_fill_background(void *arg)
     while (true)
     {
         fb_fillScr(&fb, 255, 255, 255);
-        usleep(15000); // 5ms 대기
+        usleep(80000); // 5ms 대기
     }
     return NULL;
 }
