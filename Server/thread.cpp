@@ -57,6 +57,10 @@ void log_ball_action(int fd, const char *action, int client_num)
     {
         sprintf(log_buffer, "[%s] A ball is %s {ball_type: Client%d, memory_deallocate: %dbytes}\n", timestamp, action, client_num, sizeof_ball);
     }
+    else if (action == "exit")
+    {
+        sprintf(log_buffer, "[%s] The program has terminated.\n", timestamp);
+    }
 
     write(fd, log_buffer, strlen(log_buffer));
 }
@@ -156,7 +160,7 @@ void handle_delete_all_balls(int fd, int opt_num)
     {
         cout << "Ball list is empty" << endl;
     }
-
+    log_ball_action(fd, "exit", 0);
     pthread_mutex_unlock(&list_mutex);
 }
 
@@ -221,7 +225,6 @@ void recv_cmd(int client_socket)
             break;
         case 'x':
             handle_delete_all_balls(new_fd, ballList.size());
-            cout << "프로그램 종료" << endl;
             sleep(2);
             exit(0);
             break;
