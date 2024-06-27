@@ -143,7 +143,7 @@ void *sync_list(void *arg)
             ball = new Ball;
             memcpy(ball, &pkt.ball, sizeof(Ball));
             recved_idx = ball->idx;
-            // mutex lock
+
             pthread_mutex_lock(&list_mutex);
             it = ballList.begin();
             advance(it, recved_idx);
@@ -163,14 +163,14 @@ void *fb_print_ball(void *arg)
     {
         list<Ball *> ballsToProcess;
 
-        // mutex lock
+
         pthread_mutex_lock(&list_mutex);
         if (!ballList.empty())
         {
             ballsToProcess = ballList;
         }
         pthread_mutex_unlock(&list_mutex);
-        // mutex unlock
+
 
         if (ballsToProcess.empty())
         {
@@ -191,8 +191,6 @@ void *fb_print_ball(void *arg)
 
             pixel cur_pixel = ball->pos;
             int idx = ball->idx;
-            // cout << "idx: " << idx << " x: " << cur_pixel.x << " y: " << cur_pixel.y << " client_num: " << ball->client_num << endl;
-            // 이전 위치가 존재하지 않을 경우
 
             switch (ball->client_num)
             {
@@ -211,55 +209,6 @@ void *fb_print_ball(void *arg)
         }
     }
 
-    // 모든 리스트의 요소를 출력
-    // while (true)
-    // {
-    //     // mutex lock
-    //     pthread_mutex_lock(&list_mutex);
-    //     if (ballList.empty())
-    //     {
-    //         pthread_mutex_unlock(&list_mutex);
-    //         continue;
-    //     }
-    //     for (list<Ball *>::iterator it = ballList.begin(); it != ballList.end(); ++it)
-    //     {
-    //         Ball *ball = *it;
-
-    //         if (ball == NULL)
-    //         {
-    //             continue;
-    //         }
-    //         if (ball->pos.x == -1 || ball->pos.y == -1 || ball->pos.x == 1 || ball->pos.y == 1)
-    //         {
-    //             continue;
-    //         }
-
-    //         pixel cur_pixel = ball->pos;
-    //         int idx = ball->idx;
-
-    //         //이전 위치가 존재하지 않을 경우
-    //         fb_drawFilledCircle(&fb, pre_pixels[idx], 255, 255, 255);
-
-    //         switch (ball->client_num)
-    //         {
-    //         case 1:
-    //             fb_drawFilledCircle(&fb, cur_pixel, 255, 0, 0);
-    //             break;
-    //         case 2:
-    //             fb_drawFilledCircle(&fb, cur_pixel, 0, 255, 0);
-    //             break;
-    //         case 3:
-    //             fb_drawFilledCircle(&fb, cur_pixel, 0, 0, 255);
-    //             break;
-    //         default:
-    //             break;
-    //         }
-    //         //현재 위치값을 이전 위치값(pre_pixels[idx])으로 저장
-    //         pre_pixels[idx] = cur_pixel;
-    //     }
-    //     // mutex unlock
-    //     pthread_mutex_unlock(&list_mutex);
-    // }
     return NULL;
 }
 void *fb_fill_background(void *arg)
@@ -271,24 +220,3 @@ void *fb_fill_background(void *arg)
     }
     return NULL;
 }
-// void *monitor_list(void *arg)
-// {
-//     while (true)
-//     {
-//         list<Ball *>::iterator it;
-//         // mutex lock
-//         pthread_mutex_lock(&list_mutex);
-//         for (it = ballList.begin(); it != ballList.end(); it++)
-//         {
-//             Ball *ball = *it;
-//             if (ball == NULL)
-//             {
-//                 // cout << "NULL" << endl;
-//                 continue;
-//             }
-//             // cout << "idx: " << ball->idx << " x: " << ball->pos.x << " y: " << ball->pos.y << " client_num: " << ball->client_num << endl;
-//         }
-//         // mutex lock
-//         pthread_mutex_unlock(&list_mutex);
-//     }
-// }

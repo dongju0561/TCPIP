@@ -277,18 +277,3 @@ void keep_accept(ServerSocket server, vector<int> &client_sockets, vector<thread
         server.acceptConnection(client_sockets, threads);
     }
 }
-
-void monitor_list()
-{
-    while (true)
-    {
-        // pthread_mutex_lock(&list_mutex);
-        // // cout << "Current ball list size: " << ballList.size() << endl;
-        // for (const auto &ball : ballList)
-        // {
-        //     cout << "Ball idx: " << ball->idx << ", Client num: " << ball->client_num << ", Position: (" << ball->pos.x << ", " << ball->pos.y << "), Speed: (" << ball->speed.dx << ", " << ball->speed.dy << ")" << endl;
-        // }
-        // pthread_mutex_unlock(&list_mutex);
-        // usleep(1000); // 1초마다 출력
-    }
-}

@@ -21,7 +21,7 @@ int fb_init(dev_fb* fb)
 		return FB_GET_VINFO_FAIL;
 
 	fb->screensize=fb->vinfo.xres * fb->vinfo.yres * fb->vinfo.bits_per_pixel / 8;
-	//PROT_READ | PROT_WRITE == 0x3
+
 	fb->fbp=(char*)mmap(0,fb->screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fb->fbfd, 0);
 	if(fb->fbp==MAP_FAILED) {
 		fb->fbp = NULL;

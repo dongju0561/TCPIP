@@ -33,6 +33,5 @@ void keep_accept(ServerSocket server, vector<int>& client_sockets, vector<thread
 void recv_cmd(int client_socket);
 void *move_ball(void *arg);
 void sync_list(int client_socket);
-void monitor_list();
 
 #endif // THREAD_H
