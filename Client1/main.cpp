@@ -18,7 +18,7 @@ using namespace std;
 // 전역 변수로 client socket 객체 선언
 extern ClientSocket client;
 
-int num_of_list_element = 0;
+int num_of_server_list_element = 0;
 vector<pixel> pre_pixels(1000);
 
 list<Ball *> ballList;

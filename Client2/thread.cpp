@@ -24,7 +24,7 @@ pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_t input, processor, sync_t, print_ball, monitor, erase_all_ball_v, fb_fill_background_thread;
 ThreadArgs *args[BALL_NUM];
-extern int num_of_list_element;
+extern int num_of_server_list_element;
 
 void *input_CMD(void *arg)
 {
@@ -119,23 +119,42 @@ void *sync_list(void *arg)
     sync_packet pkt;
     int recved_idx;
     list<Ball *>::iterator it;
+    int amount_of_changed_element = 0;
     while (true)
     {
         // 클라이언트 리스트와 서버 리스트 동기화
-
-        // ball = new Ball;
-
+        /*
+            패킷의 종류 두 종류
+            1. 리스트의 크기를 전달하는 패킷: pkt_type = 0
+            2. 리스트의 요소를 전달하는 패킷: pkt_type = 1
+        */
         recv(client.sock, &pkt, sizeof(sync_packet), 0);
+
         switch (pkt.pkt_type)
         {
         case 0:
-            num_of_list_element = pkt.list_size;
-            // mutex lock
+            
+            num_of_server_list_element = pkt.list_size;
+
             pthread_mutex_lock(&list_mutex);
-            ballList.clear();
-            for (int i = 0; i < num_of_list_element; i++)
+            // ballList의 노드 갯수 출력
+            amount_of_changed_element = ballList.size() - num_of_server_list_element;
+            // 리스트의 노드 갯수가 늘어났을 경우
+            if (amount_of_changed_element < 0)
             {
-                ballList.push_back(NULL);
+                for (int i = 0; i < -amount_of_changed_element; i++)
+                {
+                    ballList.push_back(NULL);
+                }
+            }
+            // 리스트의 노드 갯수가 줄어들었을 경우
+            else if (amount_of_changed_element > 0)
+            {
+                for (int i = 0; i < amount_of_changed_element; i++)
+                {
+                    delete ballList.back();
+                    ballList.pop_back();
+                }
             }
             pthread_mutex_unlock(&list_mutex);
             break;
